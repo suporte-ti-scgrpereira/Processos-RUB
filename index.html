@@ -3,15 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Processos RUB</title>
+  <title>Processos RUB - Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Sistema Processos RUB</h1>
-    <p>Ambiente inicial configurado com sucesso.</p>
-    <button id="btnTeste">Testar Conexão</button>
+  <!-- Tela de Identificação por Matrícula -->
+  <div class="card" id="cardMatricula">
+    <h2>Acesso ao Sistema</h2>
+    <p>Informe sua matrícula para prosseguir:</p>
+    <input type="text" id="inputMatricula" placeholder="Digite sua matrícula">
+    <button id="btnVerificar">Avançar</button>
   </div>
+
+  <!-- Modal/Popup de Senha -->
+  <div class="modal" id="modalSenha">
+    <div class="modal-content">
+      <h3 id="boasVindas">Olá!</h3>
+      <p>Digite sua senha para acessar:</p>
+      <input type="password" id="inputSenha" placeholder="Digite sua senha">
+      <div class="actions">
+        <button id="btnEntrar">Entrar</button>
+        <button id="btnFecharModal" class="btn-secundario">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela de Cadastro (Usuário não cadastrado) -->
+  <div class="card hidden" id="cardCadastro">
+    <h2>Solicitar Acesso</h2>
+    <p>Sua matrícula não foi encontrada. Preencha os dados abaixo para solicitar autorização:</p>
+    <input type="text" id="cadNome" placeholder="Nome Completo">
+    <input type="text" id="cadMatricula" placeholder="Matrícula" readonly>
+    <input type="text" id="cadBandeira" placeholder="Bandeira">
+    <input type="text" id="cadRegional" placeholder="Regional">
+    <input type="password" id="cadSenha" placeholder="Crie uma Senha">
+    <button id="btnSolicitar">Enviar Solicitação</button>
+    <button id="btnVoltar" class="btn-secundario">Voltar</button>
+  </div>
+
+  <!-- Tela Interna (Regionais RUB) -->
+  <div class="card hidden" id="cardDashboard">
+    <h1 id="dashBoasVindas">Bem-vindo à área de Regionais RUB</h1>
+    <p>Acesso liberado com sucesso.</p>
+    <button id="btnSair" class="btn-secundario">Sair</button>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
