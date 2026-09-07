@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <!-- Tela de Identificação por Matrícula -->
   <div class="card" id="cardMatricula">
     <h2>Acesso ao Sistema</h2>
@@ -15,7 +16,7 @@
     <button id="btnVerificar">Avançar</button>
   </div>
 
-  <!-- Modal/Popup de Senha -->
+  <!-- Modal de Senha -->
   <div class="modal" id="modalSenha">
     <div class="modal-content">
       <h3 id="boasVindas">Olá!</h3>
@@ -28,23 +29,70 @@
     </div>
   </div>
 
-  <!-- Tela de Cadastro (Usuário não cadastrado) -->
+  <!-- Tela de AVISO: Cadastro Em Aprovação -->
+  <div class="card hidden" id="cardPendente">
+    <h2>Solicitação em Análise</h2>
+    <p>Seu cadastro já foi enviado e está <strong>aguardando aprovação</strong> do Administrador do site.</p>
+    <p class="subtext">Favor aguardar a liberação do seu acesso.</p>
+    <button id="btnVoltarPendente" class="btn-secundario">Voltar ao Início</button>
+  </div>
+
+  <!-- Tela de Cadastro -->
   <div class="card hidden" id="cardCadastro">
     <h2>Solicitar Acesso</h2>
-    <p>Sua matrícula não foi encontrada. Preencha os dados abaixo para solicitar autorização:</p>
+    <p>Sua matrícula não foi encontrada. Preencha os dados abaixo:</p>
+    
     <input type="text" id="cadNome" placeholder="Nome Completo">
     <input type="text" id="cadMatricula" placeholder="Matrícula" readonly>
-    <input type="text" id="cadBandeira" placeholder="Bandeira">
-    <input type="text" id="cadRegional" placeholder="Regional">
+
+    <!-- Seleção de Bandeira -->
+    <label for="cadBandeira">Bandeira:</label>
+    <select id="cadBandeira">
+      <option value="">Selecione a Bandeira</option>
+      <option value="Fort Atacadista">Fort Atacadista</option>
+      <option value="Comper">Comper</option>
+      <option value="Grupo Pereira">Grupo Pereira (Matriz)</option>
+    </select>
+
+    <!-- Seleção de Regional (Única) -->
+    <div id="boxRegionalUnica">
+      <label for="cadRegional">Regional:</label>
+      <select id="cadRegional">
+        <option value="">Selecione a Regional</option>
+        <option value="Vale de Itajaí">Vale de Itajaí</option>
+        <option value="Alto Vale de Itajaí">Alto Vale de Itajaí</option>
+        <option value="Norte SC">Norte SC</option>
+        <option value="Oeste SC">Oeste SC</option>
+        <option value="Sul SC">Sul SC</option>
+        <option value="Florianópolis">Florianópolis</option>
+      </select>
+    </div>
+
+    <!-- Seleção Multi-Regional (Apenas para Grupo Pereira) -->
+    <div id="boxMultiRegional" class="hidden">
+      <label>Selecione as Regionais sob sua gestão:</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="chkRegional" value="Vale de Itajaí"> Vale de Itajaí</label>
+        <label><input type="checkbox" name="chkRegional" value="Alto Vale de Itajaí"> Alto Vale de Itajaí</label>
+        <label><input type="checkbox" name="chkRegional" value="Norte SC"> Norte SC</label>
+        <label><input type="checkbox" name="chkRegional" value="Oeste SC"> Oeste SC</label>
+        <label><input type="checkbox" name="chkRegional" value="Sul SC"> Sul SC</label>
+        <label><input type="checkbox" name="chkRegional" value="Florianópolis"> Florianópolis</label>
+      </div>
+    </div>
+
+    <!-- Senhas Ocultas e Confirmação -->
     <input type="password" id="cadSenha" placeholder="Crie uma Senha">
+    <input type="password" id="cadSenhaConfirma" placeholder="Confirme a Senha">
+
     <button id="btnSolicitar">Enviar Solicitação</button>
-    <button id="btnVoltar" class="btn-secundario">Voltar</button>
+    <button id="btnVoltarCadastro" class="btn-secundario">Voltar</button>
   </div>
 
   <!-- Tela Interna (Regionais RUB) -->
   <div class="card hidden" id="cardDashboard">
-    <h1 id="dashBoasVindas">Bem-vindo à área de Regionais RUB</h1>
-    <p>Acesso liberado com sucesso.</p>
+    <h1 id="dashBoasVindas">Área do Usuário</h1>
+    <p id="dashRegionaisText"></p>
     <button id="btnSair" class="btn-secundario">Sair</button>
   </div>
 
