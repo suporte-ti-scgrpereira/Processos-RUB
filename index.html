@@ -89,53 +89,54 @@
     <button id="btnVoltarCadastro" class="btn-secundario">Voltar</button>
   </div>
 
-  <!-- Dentro do cardDashboard -->
-<div class="card hidden" id="cardDashboard">
-  <!-- Botão Flutuante para Abrir o Painel -->
-  <button id="btnToggleDrawer" class="btn-flutuante">
-    📊 Planilha Diária <span>❯</span>
-  </button>
+  <!-- Tela Interna (Dashboard) -->
+  <div class="card hidden" id="cardDashboard">
+    <!-- Botão Flutuante para Abrir o Painel -->
+    <button id="btnToggleDrawer" class="btn-flutuante">
+      📊 Planilha Diária <span>❯</span>
+    </button>
 
-  <h1 id="dashBoasVindas">Área do Usuário</h1>
-  <p id="dashRegionaisText"></p>
-  
-  <!-- Container onde as tabelas/cards da planilha serão renderizados no futuro -->
-  <div id="conteudoRegional" class="conteudo-dados">
-    <p class="placeholder-text">Abra o menu lateral e selecione uma Regional para visualizar os dados diários.</p>
-  </div>
-
-  <button id="btnSair" class="btn-secundario">Sair</button>
-</div>
-
-<!-- Painel Retrátil Lateral (Drawer) -->
-<div class="drawer-overlay" id="drawerOverlay"></div>
-<div class="drawer" id="drawerPainel">
-  <div class="drawer-header">
-    <h3>Planilhas Diárias</h3>
-    <button id="btnFecharDrawer" class="btn-fechar">&times;</button>
-  </div>
-  <div class="drawer-body">
-    <label for="selectRegionalDiaria">Selecione a Regional:</label>
-    <select id="selectRegionalDiaria">
-      <option value="">-- Escolha uma Regional --</option>
-      <option value="Vale de Itajaí">Vale de Itajaí</option>
-      <option value="Alto Vale de Itajaí">Alto Vale de Itajaí</option>
-      <option value="Norte SC">Norte SC</option>
-      <option value="Oeste SC">Oeste SC</option>
-      <option value="Sul SC">Sul SC</option>
-      <option value="Florianópolis">Florianópolis</option>
-    </select>
+    <h1 id="dashBoasVindas">Área do Usuário</h1>
+    <p id="dashRegionaisText"></p>
     
-    <button id="btnCarregarRegional" class="btn-sucesso">Carregar Dados</button>
+    <!-- Container onde as tabelas/cards da planilha serão renderizados no futuro -->
+    <div id="conteudoRegional" class="conteudo-dados">
+      <p class="placeholder-text">Abra o menu lateral e selecione uma Regional para visualizar os dados diários.</p>
+    </div>
 
-    <!-- Alerta de Acesso Negado -->
-    <div id="msgAcessoNegado" class="alerta-erro hidden">
-      <strong>Acesso Negado!</strong>
-      <p id="txtRegionaisPermitidas"></p>
+    <button id="btnSair" class="btn-secundario">Sair</button>
+  </div>
+
+  <!-- Painel Retrátil Lateral (Drawer) -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <div class="drawer" id="drawerPainel">
+    <div class="drawer-header">
+      <h3>Planilhas Diárias</h3>
+      <button id="btnFecharDrawer" class="btn-fechar">&times;</button>
+    </div>
+    <div class="drawer-body">
+      <label for="selectRegionalDiaria">Selecione a Regional:</label>
+      <select id="selectRegionalDiaria">
+        <option value="">-- Escolha uma Regional --</option>
+        <option value="Vale de Itajaí">Vale de Itajaí</option>
+        <option value="Alto Vale de Itajaí">Alto Vale de Itajaí</option>
+        <option value="Norte SC">Norte SC</option>
+        <option value="Oeste SC">Oeste SC</option>
+        <option value="Sul SC">Sul SC</option>
+        <option value="Florianópolis">Florianópolis</option>
+      </select>
+      
+      <button id="btnCarregarRegional" class="btn-sucesso">Carregar Dados</button>
+
+      <!-- Alerta de Acesso Negado -->
+      <div id="msgAcessoNegado" class="alerta-erro hidden">
+        <strong>Acesso Negado!</strong>
+        <p id="txtRegionaisPermitidas"></p>
+      </div>
     </div>
   </div>
-</div>
 
+  <!-- Vínculo do código JavaScript -->
   <script src="script.js"></script>
 </body>
 </html>
