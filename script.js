@@ -122,9 +122,9 @@ document.getElementById('btnEntrar').addEventListener('click', async () => {
   }
 });
 
-// 6. Lógica de Validação de Acesso no Painel Flutuante
+// Lógica de Validação de Acesso e Renderização de Quadros
 if (btnCarregarRegional) {
-  btnCarregarRegional.addEventListener('click', () => {
+  btnCarregarRegional.addEventListener('click', async () => {
     const regionalSelecionada = document.getElementById('selectRegionalDiaria').value;
     if (!regionalSelecionada) return alert('Selecione uma regional.');
 
@@ -137,17 +137,82 @@ if (btnCarregarRegional) {
       msgAcessoNegado.classList.add('hidden');
       toggleDrawer(false);
       
-      document.getElementById('conteudoRegional').innerHTML = `
-        <div style="background: #121214; padding: 15px; border-radius: 6px; margin-top: 15px;">
-          <h3>Exibindo dados de: ${regionalSelecionada}</h3>
-          <p>Aguardando integração dos blocos da planilha...</p>
-        </div>
-      `;
+      const container = document.getElementById('conteudoRegional');
+      container.innerHTML = `<p class="placeholder-text">Carregando dados da regional ${regionalSelecionada}...</p>`;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'carregarDadosRegional', regional: regionalSelecionada })
+        }).then(r => r.json());
+
+        if (res.success) {
+          container.innerHTML = montarQuadrosDashboard(res.regional, res.blocos);
+        } else {
+          container.innerHTML = `<p class="alerta-erro">${res.message}</p>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<p class="alerta-erro">Erro ao carregar dados da planilha.</p>`;
+        console.error(err);
+      }
+
     } else {
       txtRegionaisPermitidas.innerText = `Sua conta possui acesso apenas para: ${regionaisUsuarioLogado.join(', ')}`;
       msgAcessoNegado.classList.remove('hidden');
     }
   });
+}
+
+// Função auxiliar para transformar matrizes de dados em tabelas HTML estilizadas
+function montarTabelaHTML(matriz) {
+  if (!matriz || matriz.length === 0) return '<p>Sem dados.</p>';
+  
+  let html = '<div class="table-responsive"><table class="dash-table"><thead><tr>';
+  
+  // Cabeçalho (Linha 0)
+  matriz[0].forEach(col => {
+    html += `<th>${col}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  // Linhas de Dados
+  for (let i = 1; i < matriz.length; i++) {
+    html += '<tr>';
+    matriz[i].forEach(celula => {
+      html += `<td>${celula}</td>`;
+    });
+    html += '</tr>';
+  }
+  
+  html += '</tbody></table></div>';
+  return html;
+}
+
+// Monta os quadros divididos na tela principal
+function montarQuadrosDashboard(nomeRegional, blocos) {
+  return `
+    <div class="grid-dashboard">
+      <div class="quadro-card">
+        <h3>Ruptura Operacional (${nomeRegional})</h3>
+        ${montarTabelaHTML(blocos.rupturaDiaria)}
+      </div>
+
+      <div class="quadro-card">
+        <h3>Consolidado Operacional</h3>
+        ${montarTabelaHTML(blocos.consolidado)}
+      </div>
+
+      <div class="quadro-card">
+        <h3>Ressuprimentos</h3>
+        ${montarTabelaHTML(blocos.ressuprimento)}
+      </div>
+
+      <div class="quadro-card">
+        <h3>Reincidências</h3>
+        ${montarTabelaHTML(blocos.reincidencia)}
+      </div>
+    </div>
+  `;
 }
 
 // 7. Enviar Solicitação de Cadastro
