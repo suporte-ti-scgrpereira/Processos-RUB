@@ -91,13 +91,20 @@
 
   <!-- Tela Interna (Dashboard) -->
   <div class="card hidden" id="cardDashboard">
-    <!-- Botão Flutuante para Abrir o Painel -->
-    <button id="btnToggleDrawer" class="btn-flutuante">
-      📊 Planilha Diária <span>❯</span>
-    </button>
+    <!-- Cabeçalho de Boas-Vindas Centralizado -->
+    <div class="dash-header">
+      <h1 id="dashBoasVindas">Área do Usuário</h1>
+      <p id="dashRegionaisText"></p>
+    </div>
 
-    <h1 id="dashBoasVindas">Área do Usuário</h1>
-    <p id="dashRegionaisText"></p>
+    <!-- Botão no estilo Barra Separada (Estilo Imagem 2) -->
+    <button id="btnToggleDrawer" class="btn-barra-diaria">
+      <div class="btn-conteudo-central">
+        <span class="icon">📊</span>
+        <span class="label">Planilha Diária</span>
+      </div>
+      <span class="seta">▼</span>
+    </button>
     
     <!-- Container onde as tabelas/cards da planilha serão renderizados no futuro -->
     <div id="conteudoRegional" class="conteudo-dados">
