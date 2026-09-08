@@ -10,7 +10,17 @@ const selectBandeira = document.getElementById('cadBandeira');
 const boxRegionalUnica = document.getElementById('boxRegionalUnica');
 const boxMultiRegional = document.getElementById('boxMultiRegional');
 
+// Elementos do Painel Retrátil (Drawer)
+const btnToggleDrawer = document.getElementById('btnToggleDrawer');
+const btnFecharDrawer = document.getElementById('btnFecharDrawer');
+const drawerPainel = document.getElementById('drawerPainel');
+const drawerOverlay = document.getElementById('drawerOverlay');
+const btnCarregarRegional = document.getElementById('btnCarregarRegional');
+const msgAcessoNegado = document.getElementById('msgAcessoNegado');
+const txtRegionaisPermitidas = document.getElementById('txtRegionaisPermitidas');
+
 let matriculaAtual = "";
+let regionaisUsuarioLogado = [];
 
 // 1. Alterna entre Seleção Única e Multi-Regional ao mudar a Bandeira
 selectBandeira.addEventListener('change', (e) => {
@@ -23,7 +33,7 @@ selectBandeira.addEventListener('change', (e) => {
   }
 });
 
-// 2. Limpa o formulário de cadastro para não expor dados anteriores (Segurança)
+// 2. Limpa o formulário de cadastro
 function limparFormularioCadastro() {
   document.getElementById('cadNome').value = "";
   document.getElementById('cadSenha').value = "";
@@ -35,7 +45,23 @@ function limparFormularioCadastro() {
   boxMultiRegional.classList.add('hidden');
 }
 
-// 3. Verificar Matrícula
+// 3. Controle do Painel Retrátil (Drawer)
+function toggleDrawer(abrir) {
+  if (abrir) {
+    drawerPainel.classList.add('open');
+    drawerOverlay.classList.add('active');
+  } else {
+    drawerPainel.classList.remove('open');
+    drawerOverlay.classList.remove('active');
+    if (msgAcessoNegado) msgAcessoNegado.classList.add('hidden');
+  }
+}
+
+if (btnToggleDrawer) btnToggleDrawer.addEventListener('click', () => toggleDrawer(true));
+if (btnFecharDrawer) btnFecharDrawer.addEventListener('click', () => toggleDrawer(false));
+if (drawerOverlay) drawerOverlay.addEventListener('click', () => toggleDrawer(false));
+
+// 4. Verificar Matrícula
 document.getElementById('btnVerificar').addEventListener('click', async () => {
   const matricula = document.getElementById('inputMatricula').value.trim();
   if (!matricula) return alert('Digite sua matrícula');
@@ -66,7 +92,7 @@ document.getElementById('btnVerificar').addEventListener('click', async () => {
   }
 });
 
-// 4. Validar Senha no Login
+// 5. Validar Senha no Login e Salvar Permissões do Usuário
 document.getElementById('btnEntrar').addEventListener('click', async () => {
   const senha = document.getElementById('inputSenha').value.trim();
   if (!senha) return alert('Digite sua senha');
@@ -81,6 +107,10 @@ document.getElementById('btnEntrar').addEventListener('click', async () => {
       modalSenha.classList.remove('active');
       cardMatricula.classList.add('hidden');
       cardDashboard.classList.remove('hidden');
+      
+      // Guarda as regionais do usuário para checagem de permissão
+      regionaisUsuarioLogado = res.usuario.regional ? res.usuario.regional.split(',') : [];
+
       document.getElementById('dashBoasVindas').innerText = `Bem-vindo, ${res.usuario.nome}!`;
       document.getElementById('dashRegionaisText').innerText = `Sua regional liberada: ${res.usuario.regional}`;
     } else {
@@ -92,7 +122,35 @@ document.getElementById('btnEntrar').addEventListener('click', async () => {
   }
 });
 
-// 5. Enviar Solicitação de Cadastro
+// 6. Lógica de Validação de Acesso no Painel Flutuante
+if (btnCarregarRegional) {
+  btnCarregarRegional.addEventListener('click', () => {
+    const regionalSelecionada = document.getElementById('selectRegionalDiaria').value;
+    if (!regionalSelecionada) return alert('Selecione uma regional.');
+
+    const listaPermitidas = regionaisUsuarioLogado.map(r => r.trim().toUpperCase());
+    const solicitada = regionalSelecionada.trim().toUpperCase();
+
+    const possuiAcesso = listaPermitidas.includes(solicitada) || listaPermitidas.includes('TODAS');
+
+    if (possuiAcesso) {
+      msgAcessoNegado.classList.add('hidden');
+      toggleDrawer(false);
+      
+      document.getElementById('conteudoRegional').innerHTML = `
+        <div style="background: #121214; padding: 15px; border-radius: 6px; margin-top: 15px;">
+          <h3>Exibindo dados de: ${regionalSelecionada}</h3>
+          <p>Aguardando integração dos blocos da planilha...</p>
+        </div>
+      `;
+    } else {
+      txtRegionaisPermitidas.innerText = `Sua conta possui acesso apenas para: ${regionaisUsuarioLogado.join(', ')}`;
+      msgAcessoNegado.classList.remove('hidden');
+    }
+  });
+}
+
+// 7. Enviar Solicitação de Cadastro
 document.getElementById('btnSolicitar').addEventListener('click', async () => {
   const nome = document.getElementById('cadNome').value.trim();
   const bandeira = selectBandeira.value;
@@ -101,17 +159,15 @@ document.getElementById('btnSolicitar').addEventListener('click', async () => {
 
   if (!nome || !bandeira || !senha) return alert('Preencha todos os campos obrigatórios.');
 
-  // Validação das Senhas Idênticas
   if (senha !== senhaConfirma) {
     return alert('As senhas digitadas não coincidem. Verifique e tente novamente.');
   }
 
-  // Coleta das Regionais (Única ou Multi-Regional)
   let regionalFinal = "";
   if (bandeira === 'Grupo Pereira') {
     const selecionadas = Array.from(document.querySelectorAll('input[name="chkRegional"]:checked')).map(cb => cb.value);
     if (selecionadas.length === 0) return alert('Selecione ao menos uma regional.');
-    regionalFinal = selecionadas.join(', '); // Salva formatado ex: "Vale de Itajaí, Norte SC"
+    regionalFinal = selecionadas.join(', ');
   } else {
     regionalFinal = document.getElementById('cadRegional').value;
     if (!regionalFinal) return alert('Selecione a regional.');
@@ -134,7 +190,6 @@ document.getElementById('btnSolicitar').addEventListener('click', async () => {
 
     alert(res.message);
     
-    // Limpa tudo e envia para a tela de pendente
     limparFormularioCadastro();
     cardCadastro.classList.add('hidden');
     cardPendente.classList.remove('hidden');
