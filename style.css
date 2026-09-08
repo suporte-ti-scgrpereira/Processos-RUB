@@ -1,39 +1,76 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
 body { background-color: #121214; color: #e1e1e6; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+
 .card { background: #202024; padding: 2rem; border-radius: 8px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 0.8rem; }
+#cardDashboard { max-width: 600px; } /* Ajuste de largura para acomodar os futuros quadros do dashboard */
+
 .hidden { display: none !important; }
 input, select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #323238; background: #121214; color: #fff; font-size: 14px; }
 label { font-size: 12px; color: #a8a8b3; margin-top: 4px; }
+
 .checkbox-group { display: flex; flex-direction: column; gap: 6px; background: #121214; padding: 10px; border-radius: 4px; border: 1px solid #323238; max-height: 120px; overflow-y: auto; }
 .checkbox-group label { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 13px; margin: 0; }
 .checkbox-group input { width: auto; }
+
 button { padding: 10px; background: #00875f; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px; }
 button:hover { background: #00b37e; }
 .btn-secundario { background: #323238; }
 .btn-secundario:hover { background: #4d4d57; }
+
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
 .modal.active { display: flex; }
 .modal-content { background: #202024; padding: 2rem; border-radius: 8px; width: 90%; max-width: 350px; display: flex; flex-direction: column; gap: 1rem; }
 .subtext { font-size: 13px; color: #a8a8b3; }
-/* Botão Flutuante no Topo do Dashboard */
-.btn-flutuante {
-  background: #8257e5;
-  color: #fff;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 20px;
-  font-weight: bold;
+
+/* Cabeçalho do Dashboard Centralizado */
+.dash-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.dash-header h1 {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+.dash-header p {
+  color: #a8a8b3;
+  font-size: 0.95rem;
+}
+
+/* Botão Estilo Barra Alongada (Accordion) */
+.btn-barra-diaria {
+  width: 100%;
+  background-color: #17181d;
+  border: 1px solid #292a30;
+  border-radius: 8px;
+  padding: 16px 20px;
+  color: #00e676;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
-  box-shadow: 0 4px 12px rgba(130, 87, 229, 0.4);
-  transition: transform 0.2s, background-color 0.2s;
-  margin-bottom: 15px;
+  justify-content: space-between;
+  margin: 15px 0;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
-.btn-flutuante:hover { background: #996dff; transform: translateY(-2px); }
+.btn-barra-diaria:hover {
+  background-color: #202128;
+  border-color: #00e676;
+  transform: translateY(-1px);
+}
 
-/* Fundo Escuro ao Abrir o Painel */
+.btn-conteudo-central {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1;
+}
+.btn-conteudo-central .icon { font-size: 1.2rem; }
+.btn-barra-diaria .seta { color: #00e676; font-size: 0.8rem; }
+
+/* Fundo Escuro ao Abrir o Painel Lateral */
 .drawer-overlay {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: rgba(0, 0, 0, 0.6);
@@ -63,4 +100,4 @@ button:hover { background: #00b37e; }
   background: #2d181a; border: 1px solid #f75a68; color: #f75a68;
   padding: 12px; border-radius: 6px; font-size: 13px; margin-top: 10px;
 }
-.placeholder-text { color: #a8a8b3; font-style: italic; margin-top: 20px; }
+.placeholder-text { color: #a8a8b3; font-style: italic; margin-top: 10px; text-align: center; }
