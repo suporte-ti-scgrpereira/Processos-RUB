@@ -35,21 +35,20 @@ let usuarioAutenticado = false;
 // GERENCIAMENTO DE ROTAS POR HASH (#) NA URL
 // ----------------------------------------------------
 function navegarParaRota() {
-  // Se não estiver logado, garante que NENHUMA tela de dashboard ou importação apareça
   if (!usuarioAutenticado) {
     if (cardDashboard) cardDashboard.classList.add('hidden');
     if (cardImportacao) cardImportacao.classList.add('hidden');
+    if (cardCadastro) cardCadastro.classList.add('hidden');
+    if (cardPendente) cardPendente.classList.add('hidden');
     if (cardMatricula) cardMatricula.classList.remove('hidden');
     return;
   }
 
   const hash = window.location.hash;
 
-  // Esconde todas as telas autenticadas
   if (cardDashboard) cardDashboard.classList.add('hidden');
   if (cardImportacao) cardImportacao.classList.add('hidden');
 
-  // Alterna a exibição com base no Hash da URL
   if (hash === '#importacao' && cardImportacao) {
     cardImportacao.classList.remove('hidden');
   } else {
@@ -57,7 +56,8 @@ function navegarParaRota() {
   }
 }
 
-// Escuta mudanças no Hash da URL (ex: uso das setas de Avançar/Voltar do navegador)
+// Executa a validação de rotas no carregamento e mudanças de hash
+navegarParaRota();
 window.addEventListener('hashchange', navegarParaRota);
 
 // Botões de alteração de rota
@@ -77,7 +77,6 @@ if (btnVoltarDashboard) {
 // REGRAS DE NEGÓCIO E INTERFACE
 // ----------------------------------------------------
 
-// Alterna entre Seleção Única e Multi-Regional ao mudar a Bandeira
 if (selectBandeira) {
   selectBandeira.addEventListener('change', (e) => {
     if (e.target.value === 'Grupo Pereira') {
@@ -90,7 +89,6 @@ if (selectBandeira) {
   });
 }
 
-// Limpa o formulário de cadastro
 function limparFormularioCadastro() {
   document.getElementById('cadNome').value = "";
   document.getElementById('cadSenha').value = "";
@@ -102,7 +100,6 @@ function limparFormularioCadastro() {
   boxMultiRegional.classList.add('hidden');
 }
 
-// Controle do Painel Retrátil (Drawer)
 function toggleDrawer(abrir) {
   if (abrir) {
     drawerPainel.classList.add('open');
@@ -165,13 +162,11 @@ document.getElementById('btnEntrar').addEventListener('click', async () => {
       modalSenha.classList.remove('active');
       cardMatricula.classList.add('hidden');
       
-      // Guarda as regionais do usuário para checagem de permissão
       regionaisUsuarioLogado = res.usuario.regional ? res.usuario.regional.split(',') : [];
 
       document.getElementById('dashBoasVindas').innerText = `Bem-vindo, ${res.usuario.nome}!`;
       document.getElementById('dashRegionaisText').innerText = `Sua regional liberada: ${res.usuario.regional}`;
 
-      // Redireciona para a rota configurada na URL ou abre o Dashboard por padrão
       if (!window.location.hash) {
         window.location.hash = '#dashboard';
       } else {
@@ -186,7 +181,6 @@ document.getElementById('btnEntrar').addEventListener('click', async () => {
   }
 });
 
-// Lógica de Validação de Acesso e Renderização de Quadros
 if (btnCarregarRegional) {
   btnCarregarRegional.addEventListener('click', async () => {
     const regionalSelecionada = document.getElementById('selectRegionalDiaria').value;
@@ -227,19 +221,16 @@ if (btnCarregarRegional) {
   });
 }
 
-// Transformar matrizes de dados em tabelas HTML estilizadas
 function montarTabelaHTML(matriz) {
   if (!matriz || matriz.length === 0) return '<p>Sem dados.</p>';
   
   let html = '<div class="table-responsive"><table class="dash-table"><thead><tr>';
   
-  // Cabeçalho
   matriz[0].forEach(col => {
     html += `<th>${col}</th>`;
   });
   html += '</tr></thead><tbody>';
 
-  // Linhas de Dados
   for (let i = 1; i < matriz.length; i++) {
     html += '<tr>';
     matriz[i].forEach(celula => {
@@ -252,7 +243,6 @@ function montarTabelaHTML(matriz) {
   return html;
 }
 
-// Monta os quadros divididos na tela principal
 function montarQuadrosDashboard(nomeRegional, blocos) {
   return `
     <div class="grid-dashboard">
@@ -279,7 +269,6 @@ function montarQuadrosDashboard(nomeRegional, blocos) {
   `;
 }
 
-// Enviar Solicitação de Cadastro
 document.getElementById('btnSolicitar').addEventListener('click', async () => {
   const nome = document.getElementById('cadNome').value.trim();
   const bandeira = selectBandeira.value;
@@ -328,7 +317,6 @@ document.getElementById('btnSolicitar').addEventListener('click', async () => {
   }
 });
 
-// Importação de Arquivo .ods
 if (btnEnviarAuditoria) {
   btnEnviarAuditoria.addEventListener('click', () => {
     enviarAuditoria(false);
@@ -390,13 +378,10 @@ document.getElementById('btnVoltarCadastro').addEventListener('click', () => {
   cardCadastro.classList.add('hidden');
   cardMatricula.classList.remove('hidden');
 });
+
 // Ação do Botão Sair
 document.getElementById('btnSair').addEventListener('click', () => {
   usuarioAutenticado = false;
-  
-  // Limpa o Hash da URL sem recarregar com o # antigo
-  history.pushState("", document.title, window.location.pathname + window.location.search);
-  
-  // Recarrega a página limpa na tela de login
+  history.pushState("", document.title, window.location.pathname);
   location.reload();
 });
