@@ -273,3 +273,80 @@ document.getElementById('btnVoltarCadastro').addEventListener('click', () => {
   cardMatricula.classList.remove('hidden');
 });
 document.getElementById('btnSair').addEventListener('click', () => location.reload());
+
+// Elementos de Navegação
+const cardDashboard = document.getElementById('cardDashboard');
+const cardImportacao = document.getElementById('cardImportacao');
+const btnIrParaImportacao = document.getElementById('btnIrParaImportacao');
+const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
+const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
+
+// Redireciona para a Tela de Importação
+if (btnIrParaImportacao) {
+  btnIrParaImportacao.addEventListener('click', () => {
+    cardDashboard.classList.add('hidden');
+    cardImportacao.classList.remove('hidden');
+  });
+}
+
+// Retorna para o Dashboard Principal
+if (btnVoltarDashboard) {
+  btnVoltarDashboard.addEventListener('click', () => {
+    cardImportacao.classList.add('hidden');
+    cardDashboard.classList.remove('hidden');
+  });
+}
+
+// Envio do Arquivo Simplificado
+if (btnEnviarAuditoria) {
+  btnEnviarAuditoria.addEventListener('click', () => {
+    enviarAuditoria(false);
+  });
+}
+
+async function enviarAuditoria(sobrescrever = false) {
+  const loja = document.getElementById('inputLojaUpload').value;
+  const fileInput = document.getElementById('inputFileOds');
+
+  if (!loja || fileInput.files.length === 0) {
+    return alert('Preencha o número da loja e selecione o arquivo .ods');
+  }
+
+  const file = fileInput.files[0];
+
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = async function () {
+    const base64Data = reader.result.split(',')[1];
+
+    const payload = {
+      action: 'salvarArquivoAuditoriaSimplificado',
+      loja: loja,
+      mimeType: file.type || 'application/vnd.oasis.opendocument.spreadsheet',
+      arquivoBase64: base64Data,
+      confirmarSobrescrever: sobrescrever
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      }).then(r => r.json());
+
+      if (!response.success && response.requerConfirmacao) {
+        if (confirm(response.message)) {
+          enviarAuditoria(true);
+        }
+      } else {
+        alert(response.message);
+        if (response.success) {
+          document.getElementById('inputLojaUpload').value = '';
+          fileInput.value = '';
+        }
+      }
+    } catch (err) {
+      alert('Erro na comunicação com o servidor.');
+      console.error(err);
+    }
+  };
+}
