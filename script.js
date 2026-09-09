@@ -379,6 +379,25 @@ document.getElementById('btnVoltarCadastro').addEventListener('click', () => {
   cardMatricula.classList.remove('hidden');
 });
 
+function aoDigitarLojaOuEnviar() {
+  const numeroLoja = document.getElementById("inputLoja").value;
+
+  // Chama a função que está lá no Code.gs
+  google.script.run
+    .withSuccessHandler(function(resposta) {
+      if (resposta.success) {
+        console.log("Regional encontrada:", resposta.regionalEncontrada);
+        alert("Loja " + numeroLoja + " pertence à regional: " + resposta.regionalEncontrada);
+      } else {
+        alert("Erro: " + resposta.message);
+      }
+    })
+    .withFailureHandler(function(erro) {
+      console.error("Falha na chamada:", erro);
+    })
+    .processarImportacaoLoja(numeroLoja); // Passa o número da loja para o Code.gs
+}
+
 // Ação do Botão Sair
 document.getElementById('btnSair').addEventListener('click', () => {
   usuarioAutenticado = false;
