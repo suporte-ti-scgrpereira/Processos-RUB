@@ -283,15 +283,21 @@ if (btnCarregarRegional) {
 }
 
 // ----------------------------------------------------
-// BUSCA E ENVIO DE AUDITORIA (.ODS)
+// BUSCA E ENVIO DE AUDITORIA (.ODS / .XLSX)
 // ----------------------------------------------------
 function buscarRegionalDaLoja(lojaDigitada) {
   if (!lojaDigitada || !mapaRegionaisLojas) return null;
 
-  const lojaAlvo = String(lojaDigitada).trim();
+  // Limpa o texto digitado (ex: "325" ou "Loja 325" -> extrai apenas os dígitos 325)
+  const apenasNumerosDigitados = String(lojaDigitada).replace(/\D/g, '').trim();
 
   for (const [regional, lojas] of Object.entries(mapaRegionaisLojas)) {
-    if (lojas.map(String).includes(lojaAlvo)) {
+    const encontrou = lojas.some(itemLoja => {
+      const numLoja = String(itemLoja).replace(/\D/g, '').trim();
+      return numLoja === apenasNumerosDigitados && numLoja !== "";
+    });
+
+    if (encontrou) {
       return regional;
     }
   }
@@ -310,7 +316,7 @@ async function enviarAuditoria(sobrescrever = false) {
   const fileInput = document.getElementById('inputFileOds');
 
   if (!loja || !fileInput.files.length) {
-    return alert('Preencha o número da loja e selecione o arquivo .ods');
+    return alert('Preencha o número da loja e selecione o arquivo (.ods ou .xlsx)');
   }
 
   const regionalDetectada = buscarRegionalDaLoja(loja);
@@ -320,6 +326,13 @@ async function enviarAuditoria(sobrescrever = false) {
   }
 
   const file = fileInput.files[0];
+  const fileExtension = file.name.split('.').pop().toLowerCase();
+
+  // Validação das extensões permitidas
+  if (fileExtension !== 'ods' && fileExtension !== 'xlsx') {
+    return alert('Por favor, selecione apenas arquivos com extensão .ods ou .xlsx');
+  }
+
   const reader = new FileReader();
 
   reader.readAsDataURL(file);
@@ -330,7 +343,8 @@ async function enviarAuditoria(sobrescrever = false) {
       action: 'salvarArquivoAuditoriaSimplificado',
       loja: loja,
       regional: regionalDetectada,
-      mimeType: file.type || 'application/vnd.oasis.opendocument.spreadsheet',
+      nomeArquivo: file.name,
+      mimeType: file.type,
       arquivoBase64: base64Data,
       confirmarSobrescrever: sobrescrever
     };
