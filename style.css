@@ -2,9 +2,11 @@
 body { background-color: #121214; color: #e1e1e6; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
 
 .card { background: #202024; padding: 2rem; border-radius: 8px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 0.8rem; }
-#cardDashboard { max-width: 600px; } /* Ajuste de largura para acomodar os futuros quadros do dashboard */
+#cardDashboard { max-width: 600px; } 
 
+/* Garante prioridade absoluta para ocultar elementos */
 .hidden { display: none !important; }
+
 input, select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #323238; background: #121214; color: #fff; font-size: 14px; }
 label { font-size: 12px; color: #a8a8b3; margin-top: 4px; }
 
@@ -101,6 +103,7 @@ button:hover { background: #00b37e; }
   padding: 12px; border-radius: 6px; font-size: 13px; margin-top: 10px;
 }
 .placeholder-text { color: #a8a8b3; font-style: italic; margin-top: 10px; text-align: center; }
+
 /* Layout do Grid do Dashboard */
 .grid-dashboard {
   display: grid;
