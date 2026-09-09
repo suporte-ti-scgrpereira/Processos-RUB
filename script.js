@@ -35,7 +35,13 @@ let usuarioAutenticado = false;
 // GERENCIAMENTO DE ROTAS POR HASH (#) NA URL
 // ----------------------------------------------------
 function navegarParaRota() {
-  if (!usuarioAutenticado) return; // Só navega se o usuário estiver logado
+  // Se não estiver logado, garante que NENHUMA tela de dashboard ou importação apareça
+  if (!usuarioAutenticado) {
+    if (cardDashboard) cardDashboard.classList.add('hidden');
+    if (cardImportacao) cardImportacao.classList.add('hidden');
+    if (cardMatricula) cardMatricula.classList.remove('hidden');
+    return;
+  }
 
   const hash = window.location.hash;
 
