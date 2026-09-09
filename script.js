@@ -384,4 +384,13 @@ document.getElementById('btnVoltarCadastro').addEventListener('click', () => {
   cardCadastro.classList.add('hidden');
   cardMatricula.classList.remove('hidden');
 });
-document.getElementById('btnSair').addEventListener('click', () => location.reload());
+// Ação do Botão Sair
+document.getElementById('btnSair').addEventListener('click', () => {
+  usuarioAutenticado = false;
+  
+  // Limpa o Hash da URL sem recarregar com o # antigo
+  history.pushState("", document.title, window.location.pathname + window.location.search);
+  
+  // Recarrega a página limpa na tela de login
+  location.reload();
+});
