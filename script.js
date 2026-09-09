@@ -31,7 +31,6 @@ const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
 
 // Elementos de Importação/Upload
 const inputLojaUpload = document.getElementById('inputLojaUpload');
-const selectRegionalUpload = document.getElementById('selectRegionalUpload');
 
 let matriculaAtual = "";
 let regionaisUsuarioLogado = [];
@@ -50,14 +49,14 @@ async function carregarMapaRegionais() {
 
     if (res.success && res.mapa) {
       mapaRegionaisLojas = res.mapa;
-      preencherSelectsEDimancicos();
+      preencherSelectsEDinamicos();
     }
   } catch (err) {
     console.error("Erro ao carregar mapa de regionais:", err);
   }
 }
 
-function preencherSelectsEDimancicos() {
+function preencherSelectsEDinamicos() {
   const regionais = Object.keys(mapaRegionaisLojas);
 
   if (selectRegionalDiaria) {
@@ -88,16 +87,6 @@ function preencherSelectsEDimancicos() {
       label.style.display = 'block';
       label.innerHTML = `<input type="checkbox" name="chkRegional" value="${reg}"> ${reg}`;
       boxMultiRegional.appendChild(label);
-    });
-  }
-
-  if (selectRegionalUpload) {
-    selectRegionalUpload.innerHTML = '<option value="">Selecione a Regional</option>';
-    regionais.forEach(reg => {
-      const opt = document.createElement('option');
-      opt.value = reg;
-      opt.textContent = reg;
-      selectRegionalUpload.appendChild(opt);
     });
   }
 }
@@ -293,6 +282,92 @@ if (btnCarregarRegional) {
   });
 }
 
+// ----------------------------------------------------
+// BUSCA E ENVIO DE AUDITORIA (.ODS)
+// ----------------------------------------------------
+function buscarRegionalDaLoja(lojaDigitada) {
+  if (!lojaDigitada || !mapaRegionaisLojas) return null;
+
+  const lojaAlvo = String(lojaDigitada).trim();
+
+  for (const [regional, lojas] of Object.entries(mapaRegionaisLojas)) {
+    if (lojas.map(String).includes(lojaAlvo)) {
+      return regional;
+    }
+  }
+
+  return null;
+}
+
+if (btnEnviarAuditoria) {
+  btnEnviarAuditoria.addEventListener('click', () => {
+    enviarAuditoria(false);
+  });
+}
+
+async function enviarAuditoria(sobrescrever = false) {
+  const loja = inputLojaUpload ? inputLojaUpload.value.trim() : '';
+  const fileInput = document.getElementById('inputFileOds');
+
+  if (!loja || !fileInput.files.length) {
+    return alert('Preencha o número da loja e selecione o arquivo .ods');
+  }
+
+  const regionalDetectada = buscarRegionalDaLoja(loja);
+
+  if (!regionalDetectada) {
+    return alert(`A loja ${loja} não foi encontrada na base de Regionais.`);
+  }
+
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+
+  reader.readAsDataURL(file);
+  reader.onload = async function () {
+    const base64Data = reader.result.split(',')[1];
+
+    const payload = {
+      action: 'salvarArquivoAuditoriaSimplificado',
+      loja: loja,
+      regional: regionalDetectada,
+      mimeType: file.type || 'application/vnd.oasis.opendocument.spreadsheet',
+      arquivoBase64: base64Data,
+      confirmarSobrescrever: sobrescrever
+    };
+
+    try {
+      btnEnviarAuditoria.disabled = true;
+      btnEnviarAuditoria.innerText = "Enviando...";
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      }).then(r => r.json());
+
+      if (!response.success && response.requerConfirmacao) {
+        if (confirm(response.message)) {
+          enviarAuditoria(true);
+        }
+      } else {
+        alert(response.message);
+        if (response.success) {
+          if (inputLojaUpload) inputLojaUpload.value = '';
+          fileInput.value = '';
+        }
+      }
+    } catch (err) {
+      alert('Erro na comunicação com o servidor.');
+      console.error(err);
+    } finally {
+      btnEnviarAuditoria.disabled = false;
+      btnEnviarAuditoria.innerText = "Enviar Arquivo";
+    }
+  };
+}
+
+// ----------------------------------------------------
+// MONTAGEM DE TABELAS E COMPONENTES
+// ----------------------------------------------------
 function montarTabelaHTML(matriz) {
   if (!matriz || matriz.length === 0) return '<p>Sem dados.</p>';
 
