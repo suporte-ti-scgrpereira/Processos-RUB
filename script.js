@@ -1,11 +1,14 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyqI4HxQDtaAJWgLS3iYJB6rS4_1dxGUsF_PwaGGEtnV-O3d0JjMjdaEaQTMspcTFO-QQ/exec";
 
+// Elementos de Telas / Cards
 const cardMatricula = document.getElementById('cardMatricula');
 const cardCadastro = document.getElementById('cardCadastro');
 const cardPendente = document.getElementById('cardPendente');
 const cardDashboard = document.getElementById('cardDashboard');
+const cardImportacao = document.getElementById('cardImportacao');
 const modalSenha = document.getElementById('modalSenha');
 
+// Elementos de Cadastro
 const selectBandeira = document.getElementById('cadBandeira');
 const boxRegionalUnica = document.getElementById('boxRegionalUnica');
 const boxMultiRegional = document.getElementById('boxMultiRegional');
@@ -19,21 +22,69 @@ const btnCarregarRegional = document.getElementById('btnCarregarRegional');
 const msgAcessoNegado = document.getElementById('msgAcessoNegado');
 const txtRegionaisPermitidas = document.getElementById('txtRegionaisPermitidas');
 
+// Elementos de Navegação das Páginas
+const btnIrParaImportacao = document.getElementById('btnIrParaImportacao');
+const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
+const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
+
 let matriculaAtual = "";
 let regionaisUsuarioLogado = [];
+let usuarioAutenticado = false;
 
-// 1. Alterna entre Seleção Única e Multi-Regional ao mudar a Bandeira
-selectBandeira.addEventListener('change', (e) => {
-  if (e.target.value === 'Grupo Pereira') {
-    boxRegionalUnica.classList.add('hidden');
-    boxMultiRegional.classList.remove('hidden');
+// ----------------------------------------------------
+// GERENCIAMENTO DE ROTAS POR HASH (#) NA URL
+// ----------------------------------------------------
+function navegarParaRota() {
+  if (!usuarioAutenticado) return; // Só navega se o usuário estiver logado
+
+  const hash = window.location.hash;
+
+  // Esconde todas as telas autenticadas
+  if (cardDashboard) cardDashboard.classList.add('hidden');
+  if (cardImportacao) cardImportacao.classList.add('hidden');
+
+  // Alterna a exibição com base no Hash da URL
+  if (hash === '#importacao' && cardImportacao) {
+    cardImportacao.classList.remove('hidden');
   } else {
-    boxRegionalUnica.classList.remove('hidden');
-    boxMultiRegional.classList.add('hidden');
+    if (cardDashboard) cardDashboard.classList.remove('hidden');
   }
-});
+}
 
-// 2. Limpa o formulário de cadastro
+// Escuta mudanças no Hash da URL (ex: uso das setas de Avançar/Voltar do navegador)
+window.addEventListener('hashchange', navegarParaRota);
+
+// Botões de alteração de rota
+if (btnIrParaImportacao) {
+  btnIrParaImportacao.addEventListener('click', () => {
+    window.location.hash = '#importacao';
+  });
+}
+
+if (btnVoltarDashboard) {
+  btnVoltarDashboard.addEventListener('click', () => {
+    window.location.hash = '#dashboard';
+  });
+}
+
+// ----------------------------------------------------
+// REGRAS DE NEGÓCIO E INTERFACE
+// ----------------------------------------------------
+
+// Alterna entre Seleção Única e Multi-Regional ao mudar a Bandeira
+if (selectBandeira) {
+  selectBandeira.addEventListener('change', (e) => {
+    if (e.target.value === 'Grupo Pereira') {
+      boxRegionalUnica.classList.add('hidden');
+      boxMultiRegional.classList.remove('hidden');
+    } else {
+      boxRegionalUnica.classList.remove('hidden');
+      boxMultiRegional.classList.add('hidden');
+    }
+  });
+}
+
+// Limpa o formulário de cadastro
 function limparFormularioCadastro() {
   document.getElementById('cadNome').value = "";
   document.getElementById('cadSenha').value = "";
@@ -45,7 +96,7 @@ function limparFormularioCadastro() {
   boxMultiRegional.classList.add('hidden');
 }
 
-// 3. Controle do Painel Retrátil (Drawer)
+// Controle do Painel Retrátil (Drawer)
 function toggleDrawer(abrir) {
   if (abrir) {
     drawerPainel.classList.add('open');
@@ -61,7 +112,7 @@ if (btnToggleDrawer) btnToggleDrawer.addEventListener('click', () => toggleDrawe
 if (btnFecharDrawer) btnFecharDrawer.addEventListener('click', () => toggleDrawer(false));
 if (drawerOverlay) drawerOverlay.addEventListener('click', () => toggleDrawer(false));
 
-// 4. Verificar Matrícula
+// Verificar Matrícula
 document.getElementById('btnVerificar').addEventListener('click', async () => {
   const matricula = document.getElementById('inputMatricula').value.trim();
   if (!matricula) return alert('Digite sua matrícula');
@@ -92,7 +143,7 @@ document.getElementById('btnVerificar').addEventListener('click', async () => {
   }
 });
 
-// 5. Validar Senha no Login e Salvar Permissões do Usuário
+// Validar Senha no Login e Acessar Área Interna
 document.getElementById('btnEntrar').addEventListener('click', async () => {
   const senha = document.getElementById('inputSenha').value.trim();
   if (!senha) return alert('Digite sua senha');
@@ -104,15 +155,22 @@ document.getElementById('btnEntrar').addEventListener('click', async () => {
     }).then(r => r.json());
 
     if (res.autenticado) {
+      usuarioAutenticado = true;
       modalSenha.classList.remove('active');
       cardMatricula.classList.add('hidden');
-      cardDashboard.classList.remove('hidden');
       
       // Guarda as regionais do usuário para checagem de permissão
       regionaisUsuarioLogado = res.usuario.regional ? res.usuario.regional.split(',') : [];
 
       document.getElementById('dashBoasVindas').innerText = `Bem-vindo, ${res.usuario.nome}!`;
       document.getElementById('dashRegionaisText').innerText = `Sua regional liberada: ${res.usuario.regional}`;
+
+      // Redireciona para a rota configurada na URL ou abre o Dashboard por padrão
+      if (!window.location.hash) {
+        window.location.hash = '#dashboard';
+      } else {
+        navegarParaRota();
+      }
     } else {
       alert(res.message || 'Senha incorreta.');
     }
@@ -163,13 +221,13 @@ if (btnCarregarRegional) {
   });
 }
 
-// Função auxiliar para transformar matrizes de dados em tabelas HTML estilizadas
+// Transformar matrizes de dados em tabelas HTML estilizadas
 function montarTabelaHTML(matriz) {
   if (!matriz || matriz.length === 0) return '<p>Sem dados.</p>';
   
   let html = '<div class="table-responsive"><table class="dash-table"><thead><tr>';
   
-  // Cabeçalho (Linha 0)
+  // Cabeçalho
   matriz[0].forEach(col => {
     html += `<th>${col}</th>`;
   });
@@ -215,7 +273,7 @@ function montarQuadrosDashboard(nomeRegional, blocos) {
   `;
 }
 
-// 7. Enviar Solicitação de Cadastro
+// Enviar Solicitação de Cadastro
 document.getElementById('btnSolicitar').addEventListener('click', async () => {
   const nome = document.getElementById('cadNome').value.trim();
   const bandeira = selectBandeira.value;
@@ -264,40 +322,7 @@ document.getElementById('btnSolicitar').addEventListener('click', async () => {
   }
 });
 
-// Botões de Navegação
-document.getElementById('btnFecharModal').addEventListener('click', () => modalSenha.classList.remove('active'));
-document.getElementById('btnVoltarPendente').addEventListener('click', () => location.reload());
-document.getElementById('btnVoltarCadastro').addEventListener('click', () => {
-  limparFormularioCadastro();
-  cardCadastro.classList.add('hidden');
-  cardMatricula.classList.remove('hidden');
-});
-document.getElementById('btnSair').addEventListener('click', () => location.reload());
-
-// Elementos de Navegação
-const cardDashboard = document.getElementById('cardDashboard');
-const cardImportacao = document.getElementById('cardImportacao');
-const btnIrParaImportacao = document.getElementById('btnIrParaImportacao');
-const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
-const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
-
-// Redireciona para a Tela de Importação
-if (btnIrParaImportacao) {
-  btnIrParaImportacao.addEventListener('click', () => {
-    cardDashboard.classList.add('hidden');
-    cardImportacao.classList.remove('hidden');
-  });
-}
-
-// Retorna para o Dashboard Principal
-if (btnVoltarDashboard) {
-  btnVoltarDashboard.addEventListener('click', () => {
-    cardImportacao.classList.add('hidden');
-    cardDashboard.classList.remove('hidden');
-  });
-}
-
-// Envio do Arquivo Simplificado
+// Importação de Arquivo .ods
 if (btnEnviarAuditoria) {
   btnEnviarAuditoria.addEventListener('click', () => {
     enviarAuditoria(false);
@@ -350,3 +375,13 @@ async function enviarAuditoria(sobrescrever = false) {
     }
   };
 }
+
+// Botões de Navegação e Logout
+document.getElementById('btnFecharModal').addEventListener('click', () => modalSenha.classList.remove('active'));
+document.getElementById('btnVoltarPendente').addEventListener('click', () => location.reload());
+document.getElementById('btnVoltarCadastro').addEventListener('click', () => {
+  limparFormularioCadastro();
+  cardCadastro.classList.add('hidden');
+  cardMatricula.classList.remove('hidden');
+});
+document.getElementById('btnSair').addEventListener('click', () => location.reload());
