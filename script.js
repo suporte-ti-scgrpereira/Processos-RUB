@@ -27,7 +27,6 @@ const txtRegionaisPermitidas = document.getElementById('txtRegionaisPermitidas')
 // Elementos de Navegação das Páginas
 const btnIrParaImportacao = document.getElementById('btnIrParaImportacao');
 const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
-const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
 
 // Elementos de Importação/Upload
 const inputLojaUpload = document.getElementById('inputLojaUpload');
@@ -288,35 +287,51 @@ if (btnCarregarRegional) {
 function buscarRegionalDaLoja(lojaDigitada) {
   if (!lojaDigitada || !mapaRegionaisLojas) return null;
 
-  // Limpa o texto digitado (ex: "325" ou "Loja 325" -> extrai apenas os dígitos 325)
   const apenasNumerosDigitados = String(lojaDigitada).replace(/\D/g, '').trim();
 
   for (const [regional, lojas] of Object.entries(mapaRegionaisLojas)) {
-    const encontrou = lojas.some(itemLoja => {
-      const numLoja = String(itemLoja).replace(/\D/g, '').trim();
-      return numLoja === apenasNumerosDigitados && numLoja !== "";
-    });
+    if (Array.isArray(lojas)) {
+      const encontrou = lojas.some(itemLoja => {
+        const numLoja = String(itemLoja).replace(/\D/g, '').trim();
+        return numLoja === apenasNumerosDigitados && numLoja !== "";
+      });
 
-    if (encontrou) {
-      return regional;
+      if (encontrou) {
+        return regional;
+      }
     }
   }
 
   return null;
 }
 
-if (btnEnviarAuditoria) {
-  btnEnviarAuditoria.addEventListener('click', () => {
-    enviarAuditoria(false);
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
+  if (btnEnviarAuditoria) {
+    btnEnviarAuditoria.addEventListener('click', (e) => {
+      e.preventDefault();
+      enviarAuditoria(false);
+    });
+  }
+});
 
 async function enviarAuditoria(sobrescrever = false) {
-  const loja = inputLojaUpload ? inputLojaUpload.value.trim() : '';
+  const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
+  const lojaInput = document.getElementById('inputLojaUpload');
   const fileInput = document.getElementById('inputFileOds');
 
-  if (!loja || !fileInput.files.length) {
-    return alert('Preencha o número da loja e selecione o arquivo (.ods ou .xlsx)');
+  const loja = lojaInput ? lojaInput.value.trim() : '';
+
+  if (!loja) {
+    return alert('Preencha o número da loja.');
+  }
+
+  if (!fileInput || !fileInput.files.length) {
+    return alert('Selecione o arquivo (.ods ou .xlsx).');
+  }
+
+  if (!mapaRegionaisLojas || Object.keys(mapaRegionaisLojas).length === 0) {
+    await carregarMapaRegionais();
   }
 
   const regionalDetectada = buscarRegionalDaLoja(loja);
@@ -328,30 +343,29 @@ async function enviarAuditoria(sobrescrever = false) {
   const file = fileInput.files[0];
   const fileExtension = file.name.split('.').pop().toLowerCase();
 
-  // Validação das extensões permitidas
   if (fileExtension !== 'ods' && fileExtension !== 'xlsx') {
     return alert('Por favor, selecione apenas arquivos com extensão .ods ou .xlsx');
   }
 
+  btnEnviarAuditoria.disabled = true;
+  btnEnviarAuditoria.innerText = "Enviando...";
+
   const reader = new FileReader();
-
   reader.readAsDataURL(file);
+
   reader.onload = async function () {
-    const base64Data = reader.result.split(',')[1];
-
-    const payload = {
-      action: 'salvarArquivoAuditoriaSimplificado',
-      loja: loja,
-      regional: regionalDetectada,
-      nomeArquivo: file.name,
-      mimeType: file.type,
-      arquivoBase64: base64Data,
-      confirmarSobrescrever: sobrescrever
-    };
-
     try {
-      btnEnviarAuditoria.disabled = true;
-      btnEnviarAuditoria.innerText = "Enviando...";
+      const base64Data = reader.result.split(',')[1];
+
+      const payload = {
+        action: 'salvarArquivoAuditoriaSimplificado',
+        loja: loja,
+        regional: regionalDetectada,
+        nomeArquivo: file.name,
+        mimeType: file.type,
+        arquivoBase64: base64Data,
+        confirmarSobrescrever: sobrescrever
+      };
 
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -365,7 +379,7 @@ async function enviarAuditoria(sobrescrever = false) {
       } else {
         alert(response.message);
         if (response.success) {
-          if (inputLojaUpload) inputLojaUpload.value = '';
+          if (lojaInput) lojaInput.value = '';
           fileInput.value = '';
         }
       }
