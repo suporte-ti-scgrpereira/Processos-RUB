@@ -10,6 +10,7 @@ const modalSenha = document.getElementById('modalSenha');
 
 // Elementos de Cadastro
 const selectBandeira = document.getElementById('cadBandeira');
+const selectCadRegional = document.getElementById('cadRegional');
 const boxRegionalUnica = document.getElementById('boxRegionalUnica');
 const boxMultiRegional = document.getElementById('boxMultiRegional');
 
@@ -19,6 +20,7 @@ const btnFecharDrawer = document.getElementById('btnFecharDrawer');
 const drawerPainel = document.getElementById('drawerPainel');
 const drawerOverlay = document.getElementById('drawerOverlay');
 const btnCarregarRegional = document.getElementById('btnCarregarRegional');
+const selectRegionalDiaria = document.getElementById('selectRegionalDiaria');
 const msgAcessoNegado = document.getElementById('msgAcessoNegado');
 const txtRegionaisPermitidas = document.getElementById('txtRegionaisPermitidas');
 
@@ -27,9 +29,85 @@ const btnIrParaImportacao = document.getElementById('btnIrParaImportacao');
 const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
 const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
 
+// Elementos de Importação/Upload
+const inputLojaUpload = document.getElementById('inputLojaUpload');
+const selectRegionalUpload = document.getElementById('selectRegionalUpload');
+
 let matriculaAtual = "";
 let regionaisUsuarioLogado = [];
 let usuarioAutenticado = false;
+let mapaRegionaisLojas = {}; // Guarda a estrutura { "VALE": ["310", "115"], "FLORIPA": ["810", ...] }
+
+// ----------------------------------------------------
+// CARREGAMENTO DINÂMICO DE REGIONAIS E LOJAS (DA ABA CONFIG REGIONAIS)
+// ----------------------------------------------------
+async function carregarMapaRegionais() {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'obterMapaRegionaisELojas' })
+    }).then(r => r.json());
+
+    if (res.success && res.mapa) {
+      mapaRegionaisLojas = res.mapa;
+      preencherSelectsEDimancicos();
+    }
+  } catch (err) {
+    console.error("Erro ao carregar mapa de regionais:", err);
+  }
+}
+
+function preencherSelectsEDimancicos() {
+  const regionais = Object.keys(mapaRegionaisLojas);
+
+  // 1. Preenche o Select do Painel Retrátil (Drawer)
+  if (selectRegionalDiaria) {
+    selectRegionalDiaria.innerHTML = '<option value="">Selecione a Regional</option>';
+    regionais.forEach(reg => {
+      const opt = document.createElement('option');
+      opt.value = reg;
+      opt.textContent = reg;
+      selectRegionalDiaria.appendChild(opt);
+    });
+  }
+
+  // 2. Preenche o Select de Regional Única do Cadastro
+  if (selectCadRegional) {
+    selectCadRegional.innerHTML = '<option value="">Selecione a Regional</option>';
+    regionais.forEach(reg => {
+      const opt = document.createElement('option');
+      opt.value = reg;
+      opt.textContent = reg;
+      selectCadRegional.appendChild(opt);
+    });
+  }
+
+  // 3. Preenche os Checkboxes para Multi-Regional (Grupo Pereira) no Cadastro
+  if (boxMultiRegional) {
+    boxMultiRegional.innerHTML = '<label class="block-title">Selecione as Regionais:</label>';
+    regionais.forEach(reg => {
+      const label = document.createElement('label');
+      label.className = 'checkbox-inline';
+      label.style.display = 'block';
+      label.innerHTML = `<input type="checkbox" name="chkRegional" value="${reg}"> ${reg}`;
+      boxMultiRegional.appendChild(label);
+    });
+  }
+
+  // 4. Preenche Select de Regional de Upload (caso exista na tela de importação)
+  if (selectRegionalUpload) {
+    selectRegionalUpload.innerHTML = '<option value="">Selecione a Regional</option>';
+    regionais.forEach(reg => {
+      const opt = document.createElement('option');
+      opt.value = reg;
+      opt.textContent = reg;
+      selectRegionalUpload.appendChild(opt);
+    });
+  }
+}
+
+// Inicializa a busca dos dados dinâmicos da planilha no carregamento da página
+window.addEventListener('DOMContentLoaded', carregarMapaRegionais);
 
 // ----------------------------------------------------
 // GERENCIAMENTO DE ROTAS POR HASH (#) NA URL
@@ -56,11 +134,9 @@ function navegarParaRota() {
   }
 }
 
-// Executa a validação de rotas no carregamento e mudanças de hash
 navegarParaRota();
 window.addEventListener('hashchange', navegarParaRota);
 
-// Botões de alteração de rota
 if (btnIrParaImportacao) {
   btnIrParaImportacao.addEventListener('click', () => {
     window.location.hash = '#importacao';
@@ -94,7 +170,7 @@ function limparFormularioCadastro() {
   document.getElementById('cadSenha').value = "";
   document.getElementById('cadSenhaConfirma').value = "";
   document.getElementById('cadBandeira').value = "";
-  document.getElementById('cadRegional').value = "";
+  if (selectCadRegional) selectCadRegional.value = "";
   document.querySelectorAll('input[name="chkRegional"]').forEach(chk => chk.checked = false);
   boxRegionalUnica.classList.remove('hidden');
   boxMultiRegional.classList.add('hidden');
@@ -121,7 +197,7 @@ document.getElementById('btnVerificar').addEventListener('click', async () => {
   if (!matricula) return alert('Digite sua matrícula');
 
   matriculaAtual = matricula;
-  
+
   try {
     const res = await fetch(API_URL, {
       method: 'POST',
@@ -161,7 +237,7 @@ document.getElementById('btnEntrar').addEventListener('click', async () => {
       usuarioAutenticado = true;
       modalSenha.classList.remove('active');
       cardMatricula.classList.add('hidden');
-      
+
       regionaisUsuarioLogado = res.usuario.regional ? res.usuario.regional.split(',') : [];
 
       document.getElementById('dashBoasVindas').innerText = `Bem-vindo, ${res.usuario.nome}!`;
@@ -183,7 +259,7 @@ document.getElementById('btnEntrar').addEventListener('click', async () => {
 
 if (btnCarregarRegional) {
   btnCarregarRegional.addEventListener('click', async () => {
-    const regionalSelecionada = document.getElementById('selectRegionalDiaria').value;
+    const regionalSelecionada = selectRegionalDiaria ? selectRegionalDiaria.value : '';
     if (!regionalSelecionada) return alert('Selecione uma regional.');
 
     const listaPermitidas = regionaisUsuarioLogado.map(r => r.trim().toUpperCase());
@@ -194,7 +270,7 @@ if (btnCarregarRegional) {
     if (possuiAcesso) {
       msgAcessoNegado.classList.add('hidden');
       toggleDrawer(false);
-      
+
       const container = document.getElementById('conteudoRegional');
       container.innerHTML = `<p class="placeholder-text">Carregando dados da regional ${regionalSelecionada}...</p>`;
 
@@ -223,9 +299,9 @@ if (btnCarregarRegional) {
 
 function montarTabelaHTML(matriz) {
   if (!matriz || matriz.length === 0) return '<p>Sem dados.</p>';
-  
+
   let html = '<div class="table-responsive"><table class="dash-table"><thead><tr>';
-  
+
   matriz[0].forEach(col => {
     html += `<th>${col}</th>`;
   });
@@ -238,7 +314,7 @@ function montarTabelaHTML(matriz) {
     });
     html += '</tr>';
   }
-  
+
   html += '</tbody></table></div>';
   return html;
 }
@@ -287,7 +363,7 @@ document.getElementById('btnSolicitar').addEventListener('click', async () => {
     if (selecionadas.length === 0) return alert('Selecione ao menos uma regional.');
     regionalFinal = selecionadas.join(', ');
   } else {
-    regionalFinal = document.getElementById('cadRegional').value;
+    regionalFinal = selectCadRegional ? selectCadRegional.value : '';
     if (!regionalFinal) return alert('Selecione a regional.');
   }
 
@@ -307,7 +383,7 @@ document.getElementById('btnSolicitar').addEventListener('click', async () => {
     }).then(r => r.json());
 
     alert(res.message);
-    
+
     limparFormularioCadastro();
     cardCadastro.classList.add('hidden');
     cardPendente.classList.remove('hidden');
@@ -317,6 +393,23 @@ document.getElementById('btnSolicitar').addEventListener('click', async () => {
   }
 });
 
+// ----------------------------------------------------
+// EVENTO DE BUSCA AUTOMÁTICA DE REGIONAL POR LOJA
+// ----------------------------------------------------
+function buscarRegionalDaLoja(lojaDigitada) {
+  if (!lojaDigitada || !mapaRegionaisLojas) return null;
+
+  const lojaAlvo = String(lojaDigitada).trim();
+
+  for (const [regional, lojas] of Object.entries(mapaRegionaisLojas)) {
+    if (lojas.map(String).includes(lojaAlvo)) {
+      return regional;
+    }
+  }
+
+  return null;
+}
+
 if (btnEnviarAuditoria) {
   btnEnviarAuditoria.addEventListener('click', () => {
     enviarAuditoria(false);
@@ -324,16 +417,19 @@ if (btnEnviarAuditoria) {
 }
 
 async function enviarAuditoria(sobrescrever = false) {
-  const loja = document.getElementById('inputLojaUpload').value;
+  const loja = inputLojaUpload ? inputLojaUpload.value.trim() : '';
   const fileInput = document.getElementById('inputFileOds');
 
   if (!loja || fileInput.files.length === 0) {
     return alert('Preencha o número da loja e selecione o arquivo .ods');
   }
 
-  const file = fileInput.files[0];
+  // Identifica automaticamente a regional pela loja usando a memória local
+  const regionalDetectada = buscarRegionalDaLoja(loja);
 
+  const file = fileInput.files[0];
   const reader = new FileReader();
+
   reader.readAsDataURL(file);
   reader.onload = async function () {
     const base64Data = reader.result.split(',')[1];
@@ -341,6 +437,7 @@ async function enviarAuditoria(sobrescrever = false) {
     const payload = {
       action: 'salvarArquivoAuditoriaSimplificado',
       loja: loja,
+      regional: regionalDetectada, // Envia também a regional identificada
       mimeType: file.type || 'application/vnd.oasis.opendocument.spreadsheet',
       arquivoBase64: base64Data,
       confirmarSobrescrever: sobrescrever
@@ -359,7 +456,7 @@ async function enviarAuditoria(sobrescrever = false) {
       } else {
         alert(response.message);
         if (response.success) {
-          document.getElementById('inputLojaUpload').value = '';
+          if (inputLojaUpload) inputLojaUpload.value = '';
           fileInput.value = '';
         }
       }
@@ -378,25 +475,6 @@ document.getElementById('btnVoltarCadastro').addEventListener('click', () => {
   cardCadastro.classList.add('hidden');
   cardMatricula.classList.remove('hidden');
 });
-
-function aoDigitarLojaOuEnviar() {
-  const numeroLoja = document.getElementById("inputLoja").value;
-
-  // Chama a função que está lá no Code.gs
-  google.script.run
-    .withSuccessHandler(function(resposta) {
-      if (resposta.success) {
-        console.log("Regional encontrada:", resposta.regionalEncontrada);
-        alert("Loja " + numeroLoja + " pertence à regional: " + resposta.regionalEncontrada);
-      } else {
-        alert("Erro: " + resposta.message);
-      }
-    })
-    .withFailureHandler(function(erro) {
-      console.error("Falha na chamada:", erro);
-    })
-    .processarImportacaoLoja(numeroLoja); // Passa o número da loja para o Code.gs
-}
 
 // Ação do Botão Sair
 document.getElementById('btnSair').addEventListener('click', () => {
