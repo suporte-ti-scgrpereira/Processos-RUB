@@ -89,13 +89,57 @@
     <button id="btnVoltarCadastro" class="btn-secundario">Voltar</button>
   </div>
 
-  <!-- Tela Interna (Dashboard) -->
+  <!-- Tela Interna (Dashboard Principal) -->
   <div class="card hidden" id="cardDashboard">
-    <!-- Cabeçalho de Boas-Vindas Centralizado -->
     <div class="dash-header">
       <h1 id="dashBoasVindas">Área do Usuário</h1>
       <p id="dashRegionaisText"></p>
     </div>
+
+    <!-- Botão de Navegação para a Nova Tela -->
+    <button id="btnIrParaImportacao" class="btn-barra-diaria">
+      <div class="btn-conteudo-central">
+        <span class="icon">📁</span>
+        <span class="label">Importar Auditorias (.ods)</span>
+      </div>
+      <span class="seta">➔</span>
+    </button>
+
+    <button id="btnToggleDrawer" class="btn-barra-diaria">
+      <div class="btn-conteudo-central">
+        <span class="icon">📊</span>
+        <span class="label">Planilha Diária</span>
+      </div>
+      <span class="seta">▼</span>
+    </button>
+
+    <div id="conteudoRegional" class="conteudo-dados">
+      <p class="placeholder-text">Abra o menu lateral e selecione uma Regional para visualizar os dados diários.</p>
+    </div>
+
+    <button id="btnSair" class="btn-secundario">Sair</button>
+  </div>
+
+  <!-- Nova Página: Importação de Auditorias -->
+  <div class="card hidden" id="cardImportacao">
+    <div class="dash-header">
+      <h1>Importação de Auditorias</h1>
+      <p>Envie o arquivo .ods informando apenas o número da loja.</p>
+    </div>
+
+    <div class="form-group">
+      <label for="inputLojaUpload">Número da Loja:</label>
+      <input type="number" id="inputLojaUpload" placeholder="Ex: 325">
+    </div>
+
+    <div class="form-group">
+      <label for="inputFileOds">Arquivo (.ods):</label>
+      <input type="file" id="inputFileOds" accept=".ods">
+    </div>
+
+    <button id="btnEnviarAuditoria">Enviar Arquivo</button>
+    <button id="btnVoltarDashboard" class="btn-secundario" style="margin-top: 10px;">Voltar ao Dashboard</button>
+  </div>
 
     <!-- Botão no estilo Barra Separada (Estilo Imagem 2) -->
     <button id="btnToggleDrawer" class="btn-barra-diaria">
