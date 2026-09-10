@@ -36,15 +36,23 @@ let regionaisUsuarioLogado = [];
 let usuarioAutenticado = false;
 let mapaRegionaisLojas = {}; 
 
+// Helper para envio otimizado de requisições POST (Evita CORS Preflight)
+async function fetchAPI(payload) {
+  return await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify(payload)
+  }).then(r => r.json());
+}
+
 // ----------------------------------------------------
 // CARREGAMENTO DINÂMICO DE REGIONAIS E LOJAS
 // ----------------------------------------------------
 async function carregarMapaRegionais() {
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'obterMapaRegionaisELojas' })
-    }).then(r => r.json());
+    const res = await fetchAPI({ action: 'obterMapaRegionaisELojas' });
 
     if (res.success && res.mapa) {
       mapaRegionaisLojas = res.mapa;
@@ -181,11 +189,11 @@ if (btnVerificar) {
 
     matriculaAtual = matricula;
 
+    btnVerificar.disabled = true;
+    btnVerificar.innerText = "Aguarde...";
+
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'verificarMatricula', matricula })
-      }).then(r => r.json());
+      const res = await fetchAPI({ action: 'verificarMatricula', matricula });
 
       if (res.status === "APROVADO") {
         document.getElementById('boasVindas').innerText = `Olá, ${res.nome}`;
@@ -200,8 +208,11 @@ if (btnVerificar) {
         cardCadastro.classList.remove('hidden');
       }
     } catch (err) {
-      alert('Erro ao conectar com o servidor.');
+      alert('Servidor em inicialização. Por favor, tente novamente em alguns segundos.');
       console.error(err);
+    } finally {
+      btnVerificar.disabled = false;
+      btnVerificar.innerText = "Verificar";
     }
   });
 }
@@ -213,11 +224,11 @@ if (btnEntrar) {
     const senha = document.getElementById('inputSenha').value.trim();
     if (!senha) return alert('Digite sua senha');
 
+    btnEntrar.disabled = true;
+    btnEntrar.innerText = "Entrando...";
+
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'validarSenha', matricula: matriculaAtual, senha })
-      }).then(r => r.json());
+      const res = await fetchAPI({ action: 'validarSenha', matricula: matriculaAtual, senha });
 
       if (res.autenticado) {
         usuarioAutenticado = true;
@@ -237,6 +248,9 @@ if (btnEntrar) {
     } catch (err) {
       alert('Erro ao validar senha.');
       console.error(err);
+    } finally {
+      btnEntrar.disabled = false;
+      btnEntrar.innerText = "Entrar";
     }
   });
 }
@@ -259,10 +273,7 @@ if (btnCarregarRegional) {
       container.innerHTML = `<p class="placeholder-text">Carregando dados da regional ${regionalSelecionada}...</p>`;
 
       try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'carregarDadosRegional', regional: regionalSelecionada })
-        }).then(r => r.json());
+        const res = await fetchAPI({ action: 'carregarDadosRegional', regional: regionalSelecionada });
 
         if (res.success) {
           container.innerHTML = montarQuadrosDashboard(res.regional, res.blocos);
@@ -367,10 +378,7 @@ async function enviarAuditoria(sobrescrever = false) {
         confirmarSobrescrever: sobrescrever
       };
 
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      }).then(r => r.json());
+      const response = await fetchAPI(payload);
 
       if (!response.success && response.requerConfirmacao) {
         if (confirm(response.message)) {
@@ -384,7 +392,7 @@ async function enviarAuditoria(sobrescrever = false) {
         }
       }
     } catch (err) {
-      alert('Erro na comunicação com o servidor.');
+      alert('Erro na comunicação com o servidor ao enviar o arquivo.');
       console.error(err);
     } finally {
       btnEnviarAuditoria.disabled = false;
