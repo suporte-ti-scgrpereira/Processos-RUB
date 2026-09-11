@@ -30,6 +30,7 @@ const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
 
 // Elementos de Importação/Upload
 const inputLojaUpload = document.getElementById('inputLojaUpload');
+const selectTipoImportacao = document.getElementById('selectTipoImportacao');
 
 let matriculaAtual = "";
 let regionaisUsuarioLogado = [];
@@ -293,7 +294,7 @@ if (btnCarregarRegional) {
 }
 
 // ----------------------------------------------------
-// BUSCA E ENVIO DE AUDITORIA (.ODS / .XLSX)
+// BUSCA E ENVIO DE PLANILHAS (.ODS / .XLSX)
 // ----------------------------------------------------
 function buscarRegionalDaLoja(lojaDigitada) {
   if (!lojaDigitada || !mapaRegionaisLojas) return null;
@@ -330,8 +331,10 @@ async function enviarAuditoria(sobrescrever = false) {
   const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
   const lojaInput = document.getElementById('inputLojaUpload');
   const fileInput = document.getElementById('inputFileOds');
+  const tipoSelect = document.getElementById('selectTipoImportacao');
 
   const loja = lojaInput ? lojaInput.value.trim() : '';
+  const tipoImportacao = tipoSelect ? tipoSelect.value : 'Auditorias';
 
   if (!loja) {
     return alert('Preencha o número da loja.');
@@ -372,6 +375,7 @@ async function enviarAuditoria(sobrescrever = false) {
         action: 'salvarArquivoAuditoriaSimplificado',
         loja: loja,
         regional: regionalDetectada,
+        tipoImportacao: tipoImportacao,
         nomeArquivo: file.name,
         mimeType: file.type,
         arquivoBase64: base64Data,
