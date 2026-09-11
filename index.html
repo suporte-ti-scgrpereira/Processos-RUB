@@ -96,11 +96,11 @@
       <p id="dashRegionaisText"></p>
     </div>
 
-    <!-- Botão de Navegação para a Nova Tela -->
+    <!-- Botão de Navegação para a Tela de Importação -->
     <button id="btnIrParaImportacao" class="btn-barra-diaria">
       <div class="btn-conteudo-central">
         <span class="icon">📁</span>
-        <span class="label">Importar Auditorias (.ods)</span>
+        <span class="label">Importação de Planilhas</span>
       </div>
       <span class="seta">➔</span>
     </button>
@@ -120,11 +120,20 @@
     <button id="btnSair" class="btn-secundario">Sair</button>
   </div>
 
-  <!-- Nova Página: Importação de Auditorias -->
+  <!-- Nova Página: Importação de Planilhas -->
   <div class="card hidden" id="cardImportacao">
     <div class="dash-header">
-      <h1>Importação de Auditorias</h1>
-      <p>Envie o arquivo .ods informando apenas o número da loja.</p>
+      <h1>Importação de Planilhas</h1>
+      <p>Selecione o tipo de planilha, informe o número da loja e envie o arquivo (.ods ou .xlsx).</p>
+    </div>
+
+    <div class="form-group">
+      <label for="selectTipoImportacao">Tipo de Planilha:</label>
+      <select id="selectTipoImportacao">
+        <option value="Auditorias">Auditorias</option>
+        <option value="Reincidencia">Reincidência</option>
+        <option value="Ressuprimento">Ressuprimento</option>
+      </select>
     </div>
 
     <div class="form-group">
@@ -133,8 +142,8 @@
     </div>
 
     <div class="form-group">
-      <label for="inputFileOds">Arquivo (.ods):</label>
-      <input type="file" id="inputFileOds" accept=".ods">
+      <label for="inputFileOds">Arquivo (.ods / .xlsx):</label>
+      <input type="file" id="inputFileOds" accept=".ods, .xlsx">
     </div>
 
     <button id="btnEnviarAuditoria">Enviar Arquivo</button>
