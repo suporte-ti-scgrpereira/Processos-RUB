@@ -138,7 +138,7 @@ function preencherSelectsEDinamicos() {
 window.addEventListener('DOMContentLoaded', carregarMapaRegionais);
 
 // ----------------------------------------------------
-// NAVEGAÇÃO DE ROTAS (HASH) E LIMPEZA DE URL
+// NAVEGAÇÃO DE ROTAS (HASH) E EVENTOS DE CLIQUE
 // ----------------------------------------------------
 function navegarParaRota() {
   // Se o usuário NÃO está autenticado, limpa qualquer hash e força a tela de Login
@@ -156,7 +156,7 @@ function navegarParaRota() {
     return;
   }
 
-  // Se estiver autenticado, faz o roteamento normal pelas hashes
+  // Se estiver autenticado, faz o roteamento pelas hashes
   const hash = window.location.hash;
 
   if (cardDashboard) cardDashboard.classList.add('hidden');
@@ -172,12 +172,42 @@ function navegarParaRota() {
   }
 }
 
-// Escuta mudanças de hash (caso o usuário clique nos botões internos)
+// Escuta mudanças de hash no navegador
 window.addEventListener('hashchange', navegarParaRota);
 
-// Executa assim que a página carrega / recarrega (F5 / Ctrl+F5)
+// Registra os cliques dos botões de navegação
+document.addEventListener('DOMContentLoaded', () => {
+  // Ir para Importação
+  if (btnIrParaImportacao) {
+    btnIrParaImportacao.addEventListener('click', () => {
+      window.location.hash = '#importacao';
+    });
+  }
+
+  // Ir para Relatório de Reincidência
+  if (btnIrParaReincidencia) {
+    btnIrParaReincidencia.addEventListener('click', () => {
+      window.location.hash = '#reincidencia';
+    });
+  }
+
+  // Voltar ao Dashboard a partir de Importação
+  if (btnVoltarDashboard) {
+    btnVoltarDashboard.addEventListener('click', () => {
+      window.location.hash = '#dashboard';
+    });
+  }
+
+  // Voltar ao Dashboard a partir de Reincidência
+  if (btnVoltarDashReinc) {
+    btnVoltarDashReinc.addEventListener('click', () => {
+      window.location.hash = '#dashboard';
+    });
+  }
+});
+
+// Limpa URL ao recarregar a página (F5 / Ctrl+F5)
 window.addEventListener('DOMContentLoaded', () => {
-  // Força a limpeza da hash imediatamente antes de processar qualquer tela
   if (window.location.hash !== '') {
     history.replaceState(null, document.title, window.location.pathname + window.location.search);
   }
