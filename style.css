@@ -1,8 +1,25 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
 body { background-color: #121214; color: #e1e1e6; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
 
-.card { background: #202024; padding: 2rem; border-radius: 8px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 0.8rem; }
-#cardDashboard { max-width: 600px; } 
+/* Estrutura base de Cards */
+.card { 
+  background: #202024; 
+  padding: 2rem; 
+  border-radius: 8px; 
+  width: 100%; 
+  max-width: 420px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.8rem; 
+  transition: max-width 0.3s ease;
+}
+
+/* Expansão de largura para Telas com Tabelas e Dashboards */
+#cardDashboard,
+#cardReincidencia,
+#cardImportacao { 
+  max-width: 900px; 
+}
 
 .hidden { display: none !important; }
 
@@ -106,3 +123,45 @@ button:hover { background: #00b37e; }
 .btn-fechar { background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
 .btn-sucesso { background: #00875f; margin-top: 15px; width: 100%; }
 .alerta-erro { background: #321313; border: 1px solid #d32f2f; color: #f44336; padding: 10px; border-radius: 4px; margin-top: 15px; font-size: 13px; }
+
+/* Estilização Responsiva de Tabelas */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 15px;
+  border: 1px solid #323238;
+  border-radius: 6px;
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.dash-table th, 
+.dash-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #323238;
+  white-space: nowrap;
+}
+
+.dash-table th {
+  background-color: #121214;
+  color: #00e676;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dash-table tbody tr:hover {
+  background-color: #29292e;
+}
+
+.placeholder-text {
+  text-align: center;
+  color: #a8a8b3;
+  padding: 20px 0;
+  font-size: 14px;
+}
