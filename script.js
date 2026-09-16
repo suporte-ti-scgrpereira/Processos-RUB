@@ -45,15 +45,26 @@ let regionaisUsuarioLogado = [];
 let usuarioAutenticado = false;
 let mapaRegionaisLojas = {}; 
 
-// Helper para envio otimizado de requisições POST (Evita CORS Preflight)
-async function fetchAPI(payload) {
-  return await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/plain;charset=utf-8'
-    },
-    body: JSON.stringify(payload)
-  }).then(r => r.json());
+// Helper para envio otimizado com tentativas automáticas em caso de Cold Start
+async function fetchAPI(payload, tentativas = 3) {
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    });
+    return await response.json();
+  } catch (err) {
+    // Se ainda restarem tentativas, aguarda 2.5 segundos e tenta novamente
+    if (tentativas > 1) {
+      console.warn(`Tentando reconectar ao Apps Script... Restam ${tentativas - 1} tentativas.`);
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      return fetchAPI(payload, tentativas - 1);
+    }
+    throw err;
+  }
 }
 
 // ----------------------------------------------------
