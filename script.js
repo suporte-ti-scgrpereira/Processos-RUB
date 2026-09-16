@@ -135,13 +135,10 @@ function preencherSelectsEDinamicos() {
   }
 }
 
-window.addEventListener('DOMContentLoaded', carregarMapaRegionais);
-
 // ----------------------------------------------------
 // NAVEGAÇÃO DE ROTAS (HASH) E EVENTOS DE CLIQUE
 // ----------------------------------------------------
 function navegarParaRota() {
-  // Se o usuário NÃO está autenticado, limpa qualquer hash e força a tela de Login
   if (!usuarioAutenticado) {
     if (window.location.hash !== '') {
       history.replaceState(null, document.title, window.location.pathname + window.location.search);
@@ -156,7 +153,6 @@ function navegarParaRota() {
     return;
   }
 
-  // Se estiver autenticado, faz o roteamento pelas hashes
   const hash = window.location.hash;
 
   if (cardDashboard) cardDashboard.classList.add('hidden');
@@ -175,42 +171,38 @@ function navegarParaRota() {
 // Escuta mudanças de hash no navegador
 window.addEventListener('hashchange', navegarParaRota);
 
-// Registra os cliques dos botões de navegação
+// Eventos dos botões de navegação e inicialização da aplicação
 document.addEventListener('DOMContentLoaded', () => {
-  // Ir para Importação
+  // Configurações dos botões da interface
   if (btnIrParaImportacao) {
-    btnIrParaImportacao.addEventListener('click', () => {
-      window.location.hash = '#importacao';
-    });
+    btnIrParaImportacao.addEventListener('click', () => window.location.hash = '#importacao');
   }
 
-  // Ir para Relatório de Reincidência
   if (btnIrParaReincidencia) {
-    btnIrParaReincidencia.addEventListener('click', () => {
-      window.location.hash = '#reincidencia';
-    });
+    btnIrParaReincidencia.addEventListener('click', () => window.location.hash = '#reincidencia');
   }
 
-  // Voltar ao Dashboard a partir de Importação
   if (btnVoltarDashboard) {
-    btnVoltarDashboard.addEventListener('click', () => {
-      window.location.hash = '#dashboard';
-    });
+    btnVoltarDashboard.addEventListener('click', () => window.location.hash = '#dashboard');
   }
 
-  // Voltar ao Dashboard a partir de Reincidência
   if (btnVoltarDashReinc) {
-    btnVoltarDashReinc.addEventListener('click', () => {
-      window.location.hash = '#dashboard';
+    btnVoltarDashReinc.addEventListener('click', () => window.location.hash = '#dashboard');
+  }
+
+  const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
+  if (btnEnviarAuditoria) {
+    btnEnviarAuditoria.addEventListener('click', (e) => {
+      e.preventDefault();
+      enviarAuditoria(false);
     });
   }
-});
 
-// Limpa URL ao recarregar a página (F5 / Ctrl+F5)
-window.addEventListener('DOMContentLoaded', () => {
+  // Limpa URL ao carregar e inicia dados de infraestrutura
   if (window.location.hash !== '') {
     history.replaceState(null, document.title, window.location.pathname + window.location.search);
   }
+  
   navegarParaRota();
   carregarMapaRegionais();
 });
@@ -393,16 +385,6 @@ function buscarRegionalDaLoja(lojaDigitada) {
   return null;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
-  if (btnEnviarAuditoria) {
-    btnEnviarAuditoria.addEventListener('click', (e) => {
-      e.preventDefault();
-      enviarAuditoria(false);
-    });
-  }
-});
-
 async function enviarAuditoria(sobrescrever = false) {
   const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
   const lojaInput = document.getElementById('inputLojaUpload');
@@ -418,10 +400,6 @@ async function enviarAuditoria(sobrescrever = false) {
 
   if (!fileInput || !fileInput.files.length) {
     return alert('Selecione o arquivo (.ods ou .xlsx).');
-  }
-
-  if (!mapaRegionaisLojas || Object.keys(mapaRegionaisLojas).length === 0) {
-    await carregarMapaRegionais();
   }
 
   const regionalDetectada = buscarRegionalDaLoja(loja);
