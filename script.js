@@ -466,7 +466,9 @@ document.getElementById('btnSair').addEventListener('click', () => {
   location.reload();
 });
 
-// Elementos da Tela de Reincidência
+// ----------------------------------------------------
+// TELA E RELATÓRIO DE REINCIDÊNCIA
+// ----------------------------------------------------
 const cardReincidencia = document.getElementById('cardReincidencia');
 const btnIrParaReincidencia = document.getElementById('btnIrParaReincidencia');
 const btnVoltarDashReinc = document.getElementById('btnVoltarDashReinc');
@@ -552,7 +554,7 @@ if (btnBuscarReincidencia) {
   });
 }
 
-// Montagem da Tabela Visual
+// Montagem da Tabela Visual de Reincidência
 function montarTabelaReincidencia(lojas) {
   let html = `
     <div class="table-responsive">
@@ -563,20 +565,34 @@ function montarTabelaReincidencia(lojas) {
             <th>Qtd. Reincidências</th>
             <th>Custo Ruptura Total</th>
             <th>Itens ≤ 11 Dias Sem Venda</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
   `;
 
   lojas.forEach(item => {
-    html += `
-      <tr>
-        <td><strong>${item.loja}</strong></td>
-        <td>${item.qtdReincidencias}</td>
-        <td>${item.custoRuptura}</td>
-        <td>${item.qtdAte11Dias}</td>
-      </tr>
-    `;
+    if (item.possuiPlanilha) {
+      html += `
+        <tr>
+          <td><strong>${item.loja}</strong></td>
+          <td>${item.qtdReincidencias}</td>
+          <td>${item.custoRuptura}</td>
+          <td>${item.qtdAte11Dias}</td>
+          <td><span style="color: #2e7d32; font-weight: bold;">✓ Atualizado</span></td>
+        </tr>
+      `;
+    } else {
+      html += `
+        <tr style="background-color: #fff4f4;">
+          <td><strong>${item.loja}</strong></td>
+          <td colspan="3" style="text-align: center; color: #d32f2f;">
+            <em>${item.status}</em>
+          </td>
+          <td><span style="color: #d32f2f; font-weight: bold;">⚠️ Pendente</span></td>
+        </tr>
+      `;
+    }
   });
 
   html += `</tbody></table></div>`;
