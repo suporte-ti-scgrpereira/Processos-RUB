@@ -45,20 +45,18 @@ let regionaisUsuarioLogado = [];
 let usuarioAutenticado = false;
 let mapaRegionaisLojas = {}; 
 
-// Helper para envio otimizado com tentativas automáticas em caso de Cold Start
+// Helper de envio imune a bloqueios do Google Apps Script
 async function fetchAPI(payload, tentativas = 3) {
   try {
+    const formData = new URLSearchParams();
+    formData.append("payload", JSON.stringify(payload));
+
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify(payload)
+      body: formData
     });
-    
-    // Converte a resposta em JSON
-    const data = await response.json();
-    return data;
+
+    return await response.json();
   } catch (err) {
     if (tentativas > 1) {
       console.warn(`Tentativa falhou. Reconectando em 2s... Restam ${tentativas - 1}`);
@@ -69,7 +67,6 @@ async function fetchAPI(payload, tentativas = 3) {
   }
 }
 
-
 // ----------------------------------------------------
 // CARREGAMENTO DINÂMICO DE REGIONAIS E LOJAS
 // ----------------------------------------------------
@@ -77,7 +74,7 @@ async function carregarMapaRegionais() {
   try {
     const res = await fetchAPI({ action: 'obterMapaRegionaisELojas' });
 
-    if (res.success && res.mapa) {
+    if (res && res.success && res.mapa) {
       mapaRegionaisLojas = res.mapa;
       preencherSelectsEDinamicos();
     }
@@ -149,12 +146,10 @@ function navegarParaRota() {
 
   const hash = window.location.hash;
 
-  // Esconde todas as páginas internas por padrão
   if (cardDashboard) cardDashboard.classList.add('hidden');
   if (cardImportacao) cardImportacao.classList.add('hidden');
   if (cardReincidencia) cardReincidencia.classList.add('hidden');
 
-  // Exibe apenas a página correspondente à Hash da URL
   if (hash === '#importacao' && cardImportacao) {
     cardImportacao.classList.remove('hidden');
   } else if (hash === '#reincidencia' && cardReincidencia) {
@@ -235,7 +230,8 @@ if (drawerOverlay) drawerOverlay.addEventListener('click', () => toggleDrawer(fa
 const btnVerificar = document.getElementById('btnVerificar');
 if (btnVerificar) {
   btnVerificar.addEventListener('click', async () => {
-    const matricula = document.getElementById('inputMatricula').value.trim();
+    const matriculaInput = document.getElementById('inputMatricula');
+    const matricula = matriculaInput ? matriculaInput.value.trim() : "";
     if (!matricula) return alert('Digite sua matrícula');
 
     matriculaAtual = matricula;
@@ -259,11 +255,11 @@ if (btnVerificar) {
         cardCadastro.classList.remove('hidden');
       }
     } catch (err) {
-      alert('Servidor em inicialização. Por favor, tente novamente em alguns segundos.');
+      alert('Erro de conexão com o servidor. Tente novamente.');
       console.error(err);
     } finally {
       btnVerificar.disabled = false;
-      btnVerificar.innerText = "Verificar";
+      btnVerificar.innerText = "Avançar";
     }
   });
 }
@@ -367,7 +363,6 @@ function buscarRegionalDaLoja(lojaDigitada) {
   return null;
 }
 
-// Configuração segura dos botões
 document.addEventListener('DOMContentLoaded', () => {
   const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
   if (btnEnviarAuditoria) {
@@ -459,6 +454,7 @@ async function enviarAuditoria(sobrescrever = false) {
     }
   };
 }
+
 // ----------------------------------------------------
 // MONTAGEM DE TABELAS E COMPONENTES
 // ----------------------------------------------------
@@ -506,15 +502,21 @@ function montarQuadrosDashboard(nomeRegional, blocos) {
 }
 
 // Botões e eventos de controle modal
-document.getElementById('btnFecharModal').addEventListener('click', () => modalSenha.classList.remove('active'));
-document.getElementById('btnVoltarPendente').addEventListener('click', () => location.reload());
-document.getElementById('btnVoltarCadastro').addEventListener('click', () => {
+const btnFecharModal = document.getElementById('btnFecharModal');
+if (btnFecharModal) btnFecharModal.addEventListener('click', () => modalSenha.classList.remove('active'));
+
+const btnVoltarPendente = document.getElementById('btnVoltarPendente');
+if (btnVoltarPendente) btnVoltarPendente.addEventListener('click', () => location.reload());
+
+const btnVoltarCadastro = document.getElementById('btnVoltarCadastro');
+if (btnVoltarCadastro) btnVoltarCadastro.addEventListener('click', () => {
   limparFormularioCadastro();
   cardCadastro.classList.add('hidden');
   cardMatricula.classList.remove('hidden');
 });
 
-document.getElementById('btnSair').addEventListener('click', () => {
+const btnSair = document.getElementById('btnSair');
+if (btnSair) btnSair.addEventListener('click', () => {
   usuarioAutenticado = false;
   window.location.hash = '';
   location.reload();
@@ -526,7 +528,7 @@ document.getElementById('btnSair').addEventListener('click', () => {
 if (btnBuscarReincidencia) {
   btnBuscarReincidencia.addEventListener('click', async () => {
     const regional = selectRegionalReinc.value;
-    const dataFiltro = inputDataReinc.value; // Formato YYYY-MM-DD
+    const dataFiltro = inputDataReinc.value;
 
     if (!regional) return alert('Selecione uma Regional.');
 
