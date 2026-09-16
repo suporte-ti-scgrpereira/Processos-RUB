@@ -55,16 +55,19 @@ async function fetchAPI(payload, tentativas = 3) {
       },
       body: JSON.stringify(payload)
     });
-    return await response.json();
+    
+    // Converte a resposta em JSON
+    const data = await response.json();
+    return data;
   } catch (err) {
-    // Se ainda restarem tentativas, aguarda 2.5 segundos e tenta novamente
     if (tentativas > 1) {
-      console.warn(`Tentando reconectar ao Apps Script... Restam ${tentativas - 1} tentativas.`);
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      console.warn(`Tentativa falhou. Reconectando em 2s... Restam ${tentativas - 1}`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
       return fetchAPI(payload, tentativas - 1);
     }
     throw err;
   }
+}
 }
 
 // ----------------------------------------------------
