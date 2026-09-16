@@ -131,10 +131,15 @@ function preencherSelectsEDinamicos() {
 window.addEventListener('DOMContentLoaded', carregarMapaRegionais);
 
 // ----------------------------------------------------
-// NAVEGAÇÃO DE ROTAS (HASH)
+// NAVEGAÇÃO DE ROTAS (HASH) E LIMPEZA DE URL
 // ----------------------------------------------------
 function navegarParaRota() {
+  // Se o usuário NÃO está autenticado, limpa qualquer hash e força a tela de Login
   if (!usuarioAutenticado) {
+    if (window.location.hash !== '') {
+      history.replaceState(null, document.title, window.location.pathname + window.location.search);
+    }
+    
     if (cardDashboard) cardDashboard.classList.add('hidden');
     if (cardImportacao) cardImportacao.classList.add('hidden');
     if (cardReincidencia) cardReincidencia.classList.add('hidden');
@@ -144,6 +149,7 @@ function navegarParaRota() {
     return;
   }
 
+  // Se estiver autenticado, faz o roteamento normal pelas hashes
   const hash = window.location.hash;
 
   if (cardDashboard) cardDashboard.classList.add('hidden');
@@ -159,31 +165,18 @@ function navegarParaRota() {
   }
 }
 
+// Escuta mudanças de hash (caso o usuário clique nos botões internos)
 window.addEventListener('hashchange', navegarParaRota);
 
-if (btnIrParaImportacao) {
-  btnIrParaImportacao.addEventListener('click', () => {
-    window.location.hash = '#importacao';
-  });
-}
-
-if (btnVoltarDashboard) {
-  btnVoltarDashboard.addEventListener('click', () => {
-    window.location.hash = '#dashboard';
-  });
-}
-
-if (btnIrParaReincidencia) {
-  btnIrParaReincidencia.addEventListener('click', () => {
-    window.location.hash = '#reincidencia';
-  });
-}
-
-if (btnVoltarDashReinc) {
-  btnVoltarDashReinc.addEventListener('click', () => {
-    window.location.hash = '#dashboard';
-  });
-}
+// Executa assim que a página carrega / recarrega (F5 / Ctrl+F5)
+window.addEventListener('DOMContentLoaded', () => {
+  // Força a limpeza da hash imediatamente antes de processar qualquer tela
+  if (window.location.hash !== '') {
+    history.replaceState(null, document.title, window.location.pathname + window.location.search);
+  }
+  navegarParaRota();
+  carregarMapaRegionais();
+});
 
 // ----------------------------------------------------
 // AÇÕES DO SISTEMA E AUTENTICAÇÃO
