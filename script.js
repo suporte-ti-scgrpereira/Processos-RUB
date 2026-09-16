@@ -1,6 +1,14 @@
+// ====================================================
+// CONFIGURAÇÕES E ESTADO GLOBAL DA APLICAÇÃO
+// ====================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbyqI4HxQDtaAJWgLS3iYJB6rS4_1dxGUsF_PwaGGEtnV-O3d0JjMjdaEaQTMspcTFO-QQ/exec";
 
-// Elementos de Telas / Cards
+let matriculaAtual = "";
+let regionaisUsuarioLogado = [];
+let usuarioAutenticado = false;
+let mapaRegionaisLojas = {}; 
+
+// Elementos Globais de Telas
 const cardMatricula = document.getElementById('cardMatricula');
 const cardCadastro = document.getElementById('cardCadastro');
 const cardPendente = document.getElementById('cardPendente');
@@ -9,13 +17,13 @@ const cardImportacao = document.getElementById('cardImportacao');
 const cardReincidencia = document.getElementById('cardReincidencia');
 const modalSenha = document.getElementById('modalSenha');
 
-// Elementos de Cadastro
+// Elementos de Formitários / Selects
 const selectBandeira = document.getElementById('cadBandeira');
 const selectCadRegional = document.getElementById('cadRegional');
 const boxRegionalUnica = document.getElementById('boxRegionalUnica');
 const boxMultiRegional = document.getElementById('boxMultiRegional');
 
-// Elementos do Painel Retrátil (Drawer)
+// Elementos do Drawer Retrátil
 const btnToggleDrawer = document.getElementById('btnToggleDrawer');
 const btnFecharDrawer = document.getElementById('btnFecharDrawer');
 const drawerPainel = document.getElementById('drawerPainel');
@@ -25,27 +33,14 @@ const selectRegionalDiaria = document.getElementById('selectRegionalDiaria');
 const msgAcessoNegado = document.getElementById('msgAcessoNegado');
 const txtRegionaisPermitidas = document.getElementById('txtRegionaisPermitidas');
 
-// Elementos de Navegação das Páginas
-const btnIrParaImportacao = document.getElementById('btnIrParaImportacao');
-const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
-const btnIrParaReincidencia = document.getElementById('btnIrParaReincidencia');
-const btnVoltarDashReinc = document.getElementById('btnVoltarDashReinc');
-
-// Elementos de Importação/Upload
-const inputLojaUpload = document.getElementById('inputLojaUpload');
-const selectTipoImportacao = document.getElementById('selectTipoImportacao');
-
 // Elementos de Reincidência
-const btnBuscarReincidencia = document.getElementById('btnBuscarReincidencia');
 const selectRegionalReinc = document.getElementById('selectRegionalReinc');
 const inputDataReinc = document.getElementById('inputDataReinc');
+const btnBuscarReincidencia = document.getElementById('btnBuscarReincidencia');
 
-let matriculaAtual = "";
-let regionaisUsuarioLogado = [];
-let usuarioAutenticado = false;
-let mapaRegionaisLojas = {}; 
-
-// Helper de envio imune a bloqueios do Google Apps Script
+// ====================================================
+// SERVIÇOS DE REDE (API)
+// ====================================================
 async function fetchAPI(payload, tentativas = 3) {
   try {
     const formData = new URLSearchParams();
@@ -74,9 +69,9 @@ async function fetchAPI(payload, tentativas = 3) {
   }
 }
 
-// ----------------------------------------------------
-// CARREGAMENTO DINÂMICO DE REGIONAIS E LOJAS
-// ----------------------------------------------------
+// ====================================================
+// GERENCIAMENTO DE REGIONAIS E MAPA DADOS
+// ====================================================
 async function carregarMapaRegionais() {
   try {
     const res = await fetchAPI({ action: 'obterMapaRegionaisELojas' });
@@ -91,37 +86,27 @@ async function carregarMapaRegionais() {
 }
 
 function preencherSelectsEDinamicos() {
+  if (!mapaRegionaisLojas) return;
   const regionais = Object.keys(mapaRegionaisLojas);
 
-  if (selectRegionalDiaria) {
-    selectRegionalDiaria.innerHTML = '<option value="">Selecione a Regional</option>';
-    regionais.forEach(reg => {
-      const opt = document.createElement('option');
-      opt.value = reg;
-      opt.textContent = reg;
-      selectRegionalDiaria.appendChild(opt);
-    });
-  }
+  if (regionais.length === 0) return;
 
-  if (selectCadRegional) {
-    selectCadRegional.innerHTML = '<option value="">Selecione a Regional</option>';
+  const popularSelect = (element) => {
+    if (!element) return;
+    element.innerHTML = '<option value="" style="color: #000; background-color: #fff;">Selecione a Regional</option>';
     regionais.forEach(reg => {
       const opt = document.createElement('option');
       opt.value = reg;
       opt.textContent = reg;
-      selectCadRegional.appendChild(opt);
+      opt.style.color = '#000000';
+      opt.style.backgroundColor = '#ffffff';
+      element.appendChild(opt);
     });
-  }
+  };
 
-  if (selectRegionalReinc) {
-    selectRegionalReinc.innerHTML = '<option value="">Selecione a Regional</option>';
-    regionais.forEach(reg => {
-      const opt = document.createElement('option');
-      opt.value = reg;
-      opt.textContent = reg;
-      selectRegionalReinc.appendChild(opt);
-    });
-  }
+  popularSelect(selectRegionalDiaria);
+  popularSelect(selectCadRegional);
+  popularSelect(selectRegionalReinc);
 
   if (boxMultiRegional) {
     boxMultiRegional.innerHTML = '<label class="block-title">Selecione as Regionais:</label>';
@@ -135,15 +120,14 @@ function preencherSelectsEDinamicos() {
   }
 }
 
-// ----------------------------------------------------
-// NAVEGAÇÃO DE ROTAS (HASH) E EVENTOS DE CLIQUE
-// ----------------------------------------------------
+// ====================================================
+// ROTEAMENTO E NAVEGAÇÃO DE ROTAS (HASH)
+// ====================================================
 function navegarParaRota() {
   if (!usuarioAutenticado) {
     if (window.location.hash !== '') {
       history.replaceState(null, document.title, window.location.pathname + window.location.search);
     }
-    
     if (cardDashboard) cardDashboard.classList.add('hidden');
     if (cardImportacao) cardImportacao.classList.add('hidden');
     if (cardReincidencia) cardReincidencia.classList.add('hidden');
@@ -168,18 +152,30 @@ function navegarParaRota() {
   }
 }
 
-// Escuta mudanças de hash no navegador
 window.addEventListener('hashchange', navegarParaRota);
 
-// Eventos dos botões de navegação e inicialização da aplicação
+// ====================================================
+// INICIALIZAÇÃO DE EVENTOS
+// ====================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Configurações dos botões da interface
+  // Navegação Principal
+  const btnIrParaImportacao = document.getElementById('btnIrParaImportacao');
+  const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
+  const btnIrParaReincidencia = document.getElementById('btnIrParaReincidencia');
+  const btnVoltarDashReinc = document.getElementById('btnVoltarDashReinc');
+
   if (btnIrParaImportacao) {
     btnIrParaImportacao.addEventListener('click', () => window.location.hash = '#importacao');
   }
 
   if (btnIrParaReincidencia) {
-    btnIrParaReincidencia.addEventListener('click', () => window.location.hash = '#reincidencia');
+    btnIrParaReincidencia.addEventListener('click', async () => {
+      window.location.hash = '#reincidencia';
+      // Garante busca do mapa caso o carregamento inicial tenha falhado
+      if (!mapaRegionaisLojas || Object.keys(mapaRegionaisLojas).length === 0) {
+        await carregarMapaRegionais();
+      }
+    });
   }
 
   if (btnVoltarDashboard) {
@@ -198,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Limpa URL ao carregar e inicia dados de infraestrutura
+  // Reseta hash inicial e carrega infraestrutura
   if (window.location.hash !== '') {
     history.replaceState(null, document.title, window.location.pathname + window.location.search);
   }
@@ -207,9 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
   carregarMapaRegionais();
 });
 
-// ----------------------------------------------------
-// AÇÕES DO SISTEMA E AUTENTICAÇÃO
-// ----------------------------------------------------
+// ====================================================
+// AUTENTICAÇÃO E CONTROLE DE TELA
+// ====================================================
 if (selectBandeira) {
   selectBandeira.addEventListener('change', (e) => {
     if (e.target.value === 'Grupo Pereira') {
@@ -361,30 +357,30 @@ if (btnCarregarRegional) {
   });
 }
 
-// ----------------------------------------------------
-// BUSCA E ENVIO DE PLANILHAS (.ODS / .XLSX)
-// ----------------------------------------------------
-function buscarRegionalDaLoja(lojaDigitada) {
-  if (!lojaDigitada || !mapaRegionaisLojas) return null;
+// Modais adicionais e Sair
+const btnFecharModal = document.getElementById('btnFecharModal');
+if (btnFecharModal) btnFecharModal.addEventListener('click', () => modalSenha.classList.remove('active'));
 
-  const apenasNumerosDigitados = String(lojaDigitada).replace(/\D/g, '').trim();
+const btnVoltarPendente = document.getElementById('btnVoltarPendente');
+if (btnVoltarPendente) btnVoltarPendente.addEventListener('click', () => location.reload());
 
-  for (const [regional, lojas] of Object.entries(mapaRegionaisLojas)) {
-    if (Array.isArray(lojas)) {
-      const encontrou = lojas.some(itemLoja => {
-        const numLoja = String(itemLoja).replace(/\D/g, '').trim();
-        return numLoja === apenasNumerosDigitados && numLoja !== "";
-      });
+const btnVoltarCadastro = document.getElementById('btnVoltarCadastro');
+if (btnVoltarCadastro) btnVoltarCadastro.addEventListener('click', () => {
+  limparFormularioCadastro();
+  cardCadastro.classList.add('hidden');
+  cardMatricula.classList.remove('hidden');
+});
 
-      if (encontrou) {
-        return regional;
-      }
-    }
-  }
+const btnSair = document.getElementById('btnSair');
+if (btnSair) btnSair.addEventListener('click', () => {
+  usuarioAutenticado = false;
+  window.location.hash = '';
+  location.reload();
+});
 
-  return null;
-}
-
+// ====================================================
+// IMPORTAÇÃO / UPLOAD DE ARQUIVOS
+// ====================================================
 async function enviarAuditoria(sobrescrever = false) {
   const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
   const lojaInput = document.getElementById('inputLojaUpload');
@@ -415,7 +411,6 @@ async function enviarAuditoria(sobrescrever = false) {
     try {
       const base64Data = reader.result.split(',')[1];
 
-      // O payload envia a loja e o backend busca a regional lá dentro!
       const payload = {
         action: 'salvarArquivoAuditoriaSimplificado',
         loja: loja,
@@ -451,80 +446,13 @@ async function enviarAuditoria(sobrescrever = false) {
   };
 }
 
-// ----------------------------------------------------
-// MONTAGEM DE TABELAS E COMPONENTES
-// ----------------------------------------------------
-function montarTabelaHTML(matriz) {
-  if (!matriz || matriz.length === 0) return '<p>Sem dados.</p>';
-
-  let html = '<div class="table-responsive"><table class="dash-table"><thead><tr>';
-  matriz[0].forEach(col => html += `<th>${col}</th>`);
-  html += '</tr></thead><tbody>';
-
-  for (let i = 1; i < matriz.length; i++) {
-    html += '<tr>';
-    matriz[i].forEach(celula => html += `<td>${celula}</td>`);
-    html += '</tr>';
-  }
-
-  html += '</tbody></table></div>';
-  return html;
-}
-
-function montarQuadrosDashboard(nomeRegional, blocos) {
-  return `
-    <div class="grid-dashboard">
-      <div class="quadro-card">
-        <h3>Ruptura Operacional (${nomeRegional})</h3>
-        ${montarTabelaHTML(blocos.rupturaDiaria)}
-      </div>
-
-      <div class="quadro-card">
-        <h3>Consolidado Operacional</h3>
-        ${montarTabelaHTML(blocos.consolidado)}
-      </div>
-
-      <div class="quadro-card">
-        <h3>Ressuprimentos</h3>
-        ${montarTabelaHTML(blocos.ressuprimento)}
-      </div>
-
-      <div class="quadro-card">
-        <h3>Reincidências</h3>
-        ${montarTabelaHTML(blocos.reincidencia)}
-      </div>
-    </div>
-  `;
-}
-
-// Botões e eventos de controle modal
-const btnFecharModal = document.getElementById('btnFecharModal');
-if (btnFecharModal) btnFecharModal.addEventListener('click', () => modalSenha.classList.remove('active'));
-
-const btnVoltarPendente = document.getElementById('btnVoltarPendente');
-if (btnVoltarPendente) btnVoltarPendente.addEventListener('click', () => location.reload());
-
-const btnVoltarCadastro = document.getElementById('btnVoltarCadastro');
-if (btnVoltarCadastro) btnVoltarCadastro.addEventListener('click', () => {
-  limparFormularioCadastro();
-  cardCadastro.classList.add('hidden');
-  cardMatricula.classList.remove('hidden');
-});
-
-const btnSair = document.getElementById('btnSair');
-if (btnSair) btnSair.addEventListener('click', () => {
-  usuarioAutenticado = false;
-  window.location.hash = '';
-  location.reload();
-});
-
-// ----------------------------------------------------
-// RELATÓRIO DE REINCIDÊNCIA (BUSCA E MONTAGEM)
-// ----------------------------------------------------
+// ====================================================
+// RELATÓRIO DE REINCIDÊNCIA
+// ====================================================
 if (btnBuscarReincidencia) {
   btnBuscarReincidencia.addEventListener('click', async () => {
-    const regional = selectRegionalReinc.value;
-    const dataFiltro = inputDataReinc.value;
+    const regional = selectRegionalReinc ? selectRegionalReinc.value : '';
+    const dataFiltro = inputDataReinc ? inputDataReinc.value : '';
 
     if (!regional) return alert('Selecione uma Regional.');
 
@@ -540,9 +468,9 @@ if (btnBuscarReincidencia) {
         dataFiltro: dataFiltro
       });
 
-      if (res.success && res.lojas.length > 0) {
+      if (res.success && res.lojas && res.lojas.length > 0) {
         container.innerHTML = montarTabelaReincidencia(res.lojas);
-      } else if (res.success && res.lojas.length === 0) {
+      } else if (res.success && res.lojas && res.lojas.length === 0) {
         container.innerHTML = `<p class="placeholder-text">Nenhuma planilha de Reincidência encontrada para a data/regional selecionada.</p>`;
       } else {
         container.innerHTML = `<p class="alerta-erro">${res.message}</p>`;
@@ -598,4 +526,50 @@ function montarTabelaReincidencia(lojas) {
 
   html += `</tbody></table></div>`;
   return html;
+}
+
+// ====================================================
+// MONTAGEM DE COMPONENTES DASHBOARD
+// ====================================================
+function montarTabelaHTML(matriz) {
+  if (!matriz || matriz.length === 0) return '<p>Sem dados.</p>';
+
+  let html = '<div class="table-responsive"><table class="dash-table"><thead><tr>';
+  matriz[0].forEach(col => html += `<th>${col}</th>`);
+  html += '</tr></thead><tbody>';
+
+  for (let i = 1; i < matriz.length; i++) {
+    html += '<tr>';
+    matriz[i].forEach(celula => html += `<td>${celula}</td>`);
+    html += '</tr>';
+  }
+
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function montarQuadrosDashboard(nomeRegional, blocos) {
+  return `
+    <div class="grid-dashboard">
+      <div class="quadro-card">
+        <h3>Ruptura Operacional (${nomeRegional})</h3>
+        ${montarTabelaHTML(blocos.rupturaDiaria)}
+      </div>
+
+      <div class="quadro-card">
+        <h3>Consolidado Operacional</h3>
+        ${montarTabelaHTML(blocos.consolidado)}
+      </div>
+
+      <div class="quadro-card">
+        <h3>Ressuprimentos</h3>
+        ${montarTabelaHTML(blocos.ressuprimento)}
+      </div>
+
+      <div class="quadro-card">
+        <h3>Reincidências</h3>
+        ${montarTabelaHTML(blocos.reincidencia)}
+      </div>
+    </div>
+  `;
 }
