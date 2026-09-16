@@ -17,7 +17,7 @@ const cardImportacao = document.getElementById('cardImportacao');
 const cardReincidencia = document.getElementById('cardReincidencia');
 const modalSenha = document.getElementById('modalSenha');
 
-// Elementos de Formitários / Selects
+// Elementos de Formulários / Selects
 const selectBandeira = document.getElementById('cadBandeira');
 const selectCadRegional = document.getElementById('cadRegional');
 const boxRegionalUnica = document.getElementById('boxRegionalUnica');
@@ -81,7 +81,7 @@ async function carregarMapaRegionais() {
       preencherSelectsEDinamicos();
     }
   } catch (err) {
-    console.error("Erro ao carregar mapa de regionais:", err);
+    console.error("Erro ao carregar mapa de regionais via API:", err);
   }
 }
 
@@ -93,15 +93,19 @@ function preencherSelectsEDinamicos() {
 
   const popularSelect = (element) => {
     if (!element) return;
-    element.innerHTML = '<option value="" style="color: #000; background-color: #fff;">Selecione a Regional</option>';
+    
+    // Preserva o valor selecionado
+    const valorAtual = element.value;
+    element.innerHTML = '<option value="">Selecione a Regional</option>';
+    
     regionais.forEach(reg => {
       const opt = document.createElement('option');
       opt.value = reg;
       opt.textContent = reg;
-      opt.style.color = '#000000';
-      opt.style.backgroundColor = '#ffffff';
       element.appendChild(opt);
     });
+
+    if (valorAtual) element.value = valorAtual;
   };
 
   popularSelect(selectRegionalDiaria);
@@ -158,7 +162,6 @@ window.addEventListener('hashchange', navegarParaRota);
 // INICIALIZAÇÃO DE EVENTOS
 // ====================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Navegação Principal
   const btnIrParaImportacao = document.getElementById('btnIrParaImportacao');
   const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
   const btnIrParaReincidencia = document.getElementById('btnIrParaReincidencia');
@@ -169,12 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (btnIrParaReincidencia) {
-    btnIrParaReincidencia.addEventListener('click', async () => {
+    btnIrParaReincidencia.addEventListener('click', () => {
       window.location.hash = '#reincidencia';
-      // Garante busca do mapa caso o carregamento inicial tenha falhado
-      if (!mapaRegionaisLojas || Object.keys(mapaRegionaisLojas).length === 0) {
-        await carregarMapaRegionais();
-      }
     });
   }
 
@@ -194,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Reseta hash inicial e carrega infraestrutura
   if (window.location.hash !== '') {
     history.replaceState(null, document.title, window.location.pathname + window.location.search);
   }
