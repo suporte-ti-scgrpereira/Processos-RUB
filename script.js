@@ -465,3 +465,120 @@ document.getElementById('btnSair').addEventListener('click', () => {
   window.location.hash = '';
   location.reload();
 });
+
+// Elementos da Tela de Reincidência
+const cardReincidencia = document.getElementById('cardReincidencia');
+const btnIrParaReincidencia = document.getElementById('btnIrParaReincidencia');
+const btnVoltarDashReinc = document.getElementById('btnVoltarDashReinc');
+const btnBuscarReincidencia = document.getElementById('btnBuscarReincidencia');
+const selectRegionalReinc = document.getElementById('selectRegionalReinc');
+const inputDataReinc = document.getElementById('inputDataReinc');
+
+// Controle de Navegação por HASH
+if (btnIrParaReincidencia) {
+  btnIrParaReincidencia.addEventListener('click', () => {
+    window.location.hash = '#reincidencia';
+  });
+}
+
+if (btnVoltarDashReinc) {
+  btnVoltarDashReinc.addEventListener('click', () => {
+    window.location.hash = '#dashboard';
+  });
+}
+
+// Atualiza a função navegarParaRota() para incluir a nova tela
+const navegarParaRotaAntigo = navegarParaRota;
+navegarParaRota = function() {
+  if (cardReincidencia) cardReincidencia.classList.add('hidden');
+  
+  const hash = window.location.hash;
+  if (hash === '#reincidencia' && cardReincidencia) {
+    if (cardDashboard) cardDashboard.classList.add('hidden');
+    cardReincidencia.classList.remove('hidden');
+  } else {
+    navegarParaRotaAntigo();
+  }
+};
+
+// Ao carregar o mapa de regionais, preenche o select de Reincidência
+const preencherSelectsAntigo = preencherSelectsEDinamicos;
+preencherSelectsEDinamicos = function() {
+  preencherSelectsAntigo();
+  if (selectRegionalReinc) {
+    selectRegionalReinc.innerHTML = '<option value="">Selecione a Regional</option>';
+    Object.keys(mapaRegionaisLojas).forEach(reg => {
+      const opt = document.createElement('option');
+      opt.value = reg;
+      opt.textContent = reg;
+      selectRegionalReinc.appendChild(opt);
+    });
+  }
+};
+
+// Requisição da Busca
+if (btnBuscarReincidencia) {
+  btnBuscarReincidencia.addEventListener('click', async () => {
+    const regional = selectRegionalReinc.value;
+    const dataFiltro = inputDataReinc.value; // Formato YYYY-MM-DD
+
+    if (!regional) return alert('Selecione uma Regional.');
+
+    const container = document.getElementById('resultadoReincidencia');
+    container.innerHTML = `<p class="placeholder-text">Processando planilhas de Reincidência da regional ${regional}...</p>`;
+
+    btnBuscarReincidencia.disabled = true;
+
+    try {
+      const res = await fetchAPI({
+        action: 'buscarDadosReincidencia',
+        regional: regional,
+        dataFiltro: dataFiltro
+      });
+
+      if (res.success && res.lojas.length > 0) {
+        container.innerHTML = montarTabelaReincidencia(res.lojas);
+      } else if (res.success && res.lojas.length === 0) {
+        container.innerHTML = `<p class="placeholder-text">Nenhuma planilha de Reincidência encontrada para a data/regional selecionada.</p>`;
+      } else {
+        container.innerHTML = `<p class="alerta-erro">${res.message}</p>`;
+      }
+    } catch (err) {
+      container.innerHTML = `<p class="alerta-erro">Erro ao conectar com o servidor.</p>`;
+      console.error(err);
+    } finally {
+      btnBuscarReincidencia.disabled = false;
+    }
+  });
+}
+
+// Montagem da Tabela Visual
+function montarTabelaReincidencia(lojas) {
+  let html = `
+    <div class="table-responsive">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Loja</th>
+            <th>Qtd. Reincidências</th>
+            <th>Custo Ruptura Total</th>
+            <th>Itens ≤ 11 Dias Sem Venda</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  lojas.forEach(item => {
+    html += `
+      <tr>
+        <td><strong>${item.loja}</strong></td>
+        <td>${item.qtdReincidencias}</td>
+        <td>${item.custoRuptura}</td>
+        <td>${item.qtdAte11Dias}</td>
+      </tr>
+    `;
+  });
+
+  html += `</tbody></table></div>`;
+  return html;
+}
