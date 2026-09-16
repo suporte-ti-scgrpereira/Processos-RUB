@@ -68,7 +68,7 @@ async function fetchAPI(payload, tentativas = 3) {
     throw err;
   }
 }
-}
+
 
 // ----------------------------------------------------
 // CARREGAMENTO DINÂMICO DE REGIONAIS E LOJAS
