@@ -394,23 +394,11 @@ async function enviarAuditoria(sobrescrever = false) {
   const loja = lojaInput ? lojaInput.value.trim() : '';
   const tipoImportacao = tipoSelect ? tipoSelect.value : 'Auditorias';
 
-  if (!loja) {
-    return alert('Preencha o número da loja.');
-  }
-
-  if (!fileInput || !fileInput.files.length) {
-    return alert('Selecione o arquivo (.ods ou .xlsx).');
-  }
-
-  const regionalDetectada = buscarRegionalDaLoja(loja);
-
-  if (!regionalDetectada) {
-    return alert(`A loja ${loja} não foi encontrada na base de Regionais.`);
-  }
+  if (!loja) return alert('Preencha o número da loja.');
+  if (!fileInput || !fileInput.files.length) return alert('Selecione o arquivo (.ods ou .xlsx).');
 
   const file = fileInput.files[0];
   const fileExtension = file.name.split('.').pop().toLowerCase();
-
   if (fileExtension !== 'ods' && fileExtension !== 'xlsx') {
     return alert('Por favor, selecione apenas arquivos com extensão .ods ou .xlsx');
   }
@@ -427,10 +415,10 @@ async function enviarAuditoria(sobrescrever = false) {
     try {
       const base64Data = reader.result.split(',')[1];
 
+      // O payload envia a loja e o backend busca a regional lá dentro!
       const payload = {
         action: 'salvarArquivoAuditoriaSimplificado',
         loja: loja,
-        regional: regionalDetectada,
         tipoImportacao: tipoImportacao,
         nomeArquivo: file.name,
         mimeType: file.type,
