@@ -59,12 +59,12 @@
       <label for="cadRegional">Regional:</label>
       <select id="cadRegional">
         <option value="">Selecione a Regional</option>
-        <option value="VALE"> VALE</option>
-        <option value="ALTO VALE"> ALTO VALE</option>
-        <option value="NORTE"> NORTE</option>
-        <option value="OESTE"> OESTE</option>
-        <option value="SUL"> SUL</option>
-        <option value="FLORIPA"> FLORIPA</option>
+        <option value="VALE">VALE</option>
+        <option value="ALTO VALE">ALTO VALE</option>
+        <option value="NORTE">NORTE</option>
+        <option value="OESTE">OESTE</option>
+        <option value="SUL">SUL</option>
+        <option value="FLORIPA">FLORIPA</option>
       </select>
     </div>
 
@@ -96,7 +96,6 @@
       <p id="dashRegionaisText"></p>
     </div>
 
-    <!-- Botão de Navegação para a Tela de Importação (id="btnIrParaImportacao") -->
     <button id="btnIrParaImportacao" class="btn-barra-diaria">
       <div class="btn-conteudo-central">
         <span class="icon">📁</span>
@@ -105,7 +104,6 @@
       <span class="seta">➔</span>
     </button>
 
-    <!-- Botão de Navegação para o Relatório de Reincidência (id="btnIrParaReincidencia") -->
     <button id="btnIrParaReincidencia" class="btn-barra-diaria">
       <div class="btn-conteudo-central">
         <span class="icon">🔄</span>
@@ -160,34 +158,40 @@
   </div>
 
   <!-- Nova Página: Relatório de Reincidência -->
-<div class="card hidden" id="cardReincidencia">
-  <div class="dash-header">
-    <h1>Análise de Reincidência</h1>
-    <p>Consolidado de itens reincidentes filtrados por loja e data.</p>
-  </div>
-
-  <div class="form-group-inline" style="display: flex; gap: 10px; margin-bottom: 15px;">
-    <div>
-      <label for="selectRegionalReinc">Regional:</label>
-      <select id="selectRegionalReinc">
-        <!-- Preenchido dinamicamente pelo JS -->
-      </select>
+  <div class="card hidden" id="cardReincidencia">
+    <div class="dash-header">
+      <h1>Análise de Reincidência</h1>
+      <p>Consolidado de itens reincidentes filtrados por loja e data.</p>
     </div>
 
-    <div>
-      <label for="inputDataReinc">Data da Planilha:</label>
-      <input type="date" id="inputDataReinc">
+    <div class="form-group-inline" style="display: flex; gap: 10px; margin-bottom: 15px;">
+      <div>
+        <label for="selectRegionalReinc">Regional:</label>
+        <select id="selectRegionalReinc">
+          <option value="">Selecione a Regional</option>
+          <option value="VALE">VALE</option>
+          <option value="ALTO VALE">ALTO VALE</option>
+          <option value="NORTE">NORTE</option>
+          <option value="OESTE">OESTE</option>
+          <option value="SUL">SUL</option>
+          <option value="FLORIPA">FLORIPA</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="inputDataReinc">Data da Planilha:</label>
+        <input type="date" id="inputDataReinc">
+      </div>
+
+      <button id="btnBuscarReincidencia" style="margin-top: 22px;">Buscar Dados</button>
     </div>
 
-    <button id="btnBuscarReincidencia" style="margin-top: 22px;">Buscar Dados</button>
-  </div>
+    <div id="resultadoReincidencia" class="conteudo-dados">
+      <p class="placeholder-text">Selecione uma Regional e clique em Buscar Dados.</p>
+    </div>
 
-  <div id="resultadoReincidencia" class="conteudo-dados">
-    <p class="placeholder-text">Selecione uma Regional e clique em Buscar Dados.</p>
+    <button id="btnVoltarDashReinc" class="btn-secundario" style="margin-top: 15px;">Voltar ao Dashboard</button>
   </div>
-
-  <button id="btnVoltarDashReinc" class="btn-secundario" style="margin-top: 15px;">Voltar ao Dashboard</button>
-</div>
 
   <!-- Painel Retrátil Lateral (Drawer) -->
   <div class="drawer-overlay" id="drawerOverlay"></div>
@@ -200,17 +204,16 @@
       <label for="selectRegionalDiaria">Selecione a Regional:</label>
       <select id="selectRegionalDiaria">
         <option value="">-- Escolha uma Regional --</option>
-        <option value="VALE"> VALE</option>
-        <option value="ALTO VALE"> ALTO VALE</option>
-        <option value="NORTE"> NORTE</option>
-        <option value="OESTE"> OESTE</option>
-        <option value="SUL"> SUL</option>
-        <option value="FLORIPA"> FLORIPA</option>
+        <option value="VALE">VALE</option>
+        <option value="ALTO VALE">ALTO VALE</option>
+        <option value="NORTE">NORTE</option>
+        <option value="OESTE">OESTE</option>
+        <option value="SUL">SUL</option>
+        <option value="FLORIPA">FLORIPA</option>
       </select>
       
       <button id="btnCarregarRegional" class="btn-sucesso">Carregar Dados</button>
 
-      <!-- Alerta de Acesso Negado -->
       <div id="msgAcessoNegado" class="alerta-erro hidden">
         <strong>Acesso Negado!</strong>
         <p id="txtRegionaisPermitidas"></p>
@@ -218,7 +221,6 @@
     </div>
   </div>
 
-  <!-- Vínculo do código JavaScript -->
   <script src="script.js"></script>
 </body>
 </html>
