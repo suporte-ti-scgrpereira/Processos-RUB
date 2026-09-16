@@ -53,8 +53,15 @@ async function fetchAPI(payload, tentativas = 3) {
 
     const response = await fetch(API_URL, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      },
       body: formData
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
     return await response.json();
   } catch (err) {
