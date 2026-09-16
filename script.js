@@ -367,6 +367,7 @@ function buscarRegionalDaLoja(lojaDigitada) {
   return null;
 }
 
+// Configuração segura dos botões
 document.addEventListener('DOMContentLoaded', () => {
   const btnEnviarAuditoria = document.getElementById('btnEnviarAuditoria');
   if (btnEnviarAuditoria) {
@@ -411,8 +412,10 @@ async function enviarAuditoria(sobrescrever = false) {
     return alert('Por favor, selecione apenas arquivos com extensão .ods ou .xlsx');
   }
 
-  btnEnviarAuditoria.disabled = true;
-  btnEnviarAuditoria.innerText = "Enviando...";
+  if (btnEnviarAuditoria) {
+    btnEnviarAuditoria.disabled = true;
+    btnEnviarAuditoria.innerText = "Enviando...";
+  }
 
   const reader = new FileReader();
   reader.readAsDataURL(file);
@@ -449,12 +452,13 @@ async function enviarAuditoria(sobrescrever = false) {
       alert('Erro na comunicação com o servidor ao enviar o arquivo.');
       console.error(err);
     } finally {
-      btnEnviarAuditoria.disabled = false;
-      btnEnviarAuditoria.innerText = "Enviar Arquivo";
+      if (btnEnviarAuditoria) {
+        btnEnviarAuditoria.disabled = false;
+        btnEnviarAuditoria.innerText = "Enviar Arquivo";
+      }
     }
   };
 }
-
 // ----------------------------------------------------
 // MONTAGEM DE TABELAS E COMPONENTES
 // ----------------------------------------------------
