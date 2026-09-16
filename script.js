@@ -6,6 +6,7 @@ const cardCadastro = document.getElementById('cardCadastro');
 const cardPendente = document.getElementById('cardPendente');
 const cardDashboard = document.getElementById('cardDashboard');
 const cardImportacao = document.getElementById('cardImportacao');
+const cardReincidencia = document.getElementById('cardReincidencia');
 const modalSenha = document.getElementById('modalSenha');
 
 // Elementos de Cadastro
@@ -27,10 +28,17 @@ const txtRegionaisPermitidas = document.getElementById('txtRegionaisPermitidas')
 // Elementos de Navegação das Páginas
 const btnIrParaImportacao = document.getElementById('btnIrParaImportacao');
 const btnVoltarDashboard = document.getElementById('btnVoltarDashboard');
+const btnIrParaReincidencia = document.getElementById('btnIrParaReincidencia');
+const btnVoltarDashReinc = document.getElementById('btnVoltarDashReinc');
 
 // Elementos de Importação/Upload
 const inputLojaUpload = document.getElementById('inputLojaUpload');
 const selectTipoImportacao = document.getElementById('selectTipoImportacao');
+
+// Elementos de Reincidência
+const btnBuscarReincidencia = document.getElementById('btnBuscarReincidencia');
+const selectRegionalReinc = document.getElementById('selectRegionalReinc');
+const inputDataReinc = document.getElementById('inputDataReinc');
 
 let matriculaAtual = "";
 let regionaisUsuarioLogado = [];
@@ -87,6 +95,16 @@ function preencherSelectsEDinamicos() {
     });
   }
 
+  if (selectRegionalReinc) {
+    selectRegionalReinc.innerHTML = '<option value="">Selecione a Regional</option>';
+    regionais.forEach(reg => {
+      const opt = document.createElement('option');
+      opt.value = reg;
+      opt.textContent = reg;
+      selectRegionalReinc.appendChild(opt);
+    });
+  }
+
   if (boxMultiRegional) {
     boxMultiRegional.innerHTML = '<label class="block-title">Selecione as Regionais:</label>';
     regionais.forEach(reg => {
@@ -108,6 +126,7 @@ function navegarParaRota() {
   if (!usuarioAutenticado) {
     if (cardDashboard) cardDashboard.classList.add('hidden');
     if (cardImportacao) cardImportacao.classList.add('hidden');
+    if (cardReincidencia) cardReincidencia.classList.add('hidden');
     if (cardCadastro) cardCadastro.classList.add('hidden');
     if (cardPendente) cardPendente.classList.add('hidden');
     if (cardMatricula) cardMatricula.classList.remove('hidden');
@@ -116,11 +135,16 @@ function navegarParaRota() {
 
   const hash = window.location.hash;
 
+  // Esconde todas as páginas internas por padrão
   if (cardDashboard) cardDashboard.classList.add('hidden');
   if (cardImportacao) cardImportacao.classList.add('hidden');
+  if (cardReincidencia) cardReincidencia.classList.add('hidden');
 
+  // Exibe apenas a página correspondente à Hash da URL
   if (hash === '#importacao' && cardImportacao) {
     cardImportacao.classList.remove('hidden');
+  } else if (hash === '#reincidencia' && cardReincidencia) {
+    cardReincidencia.classList.remove('hidden');
   } else {
     if (cardDashboard) cardDashboard.classList.remove('hidden');
   }
@@ -136,6 +160,18 @@ if (btnIrParaImportacao) {
 
 if (btnVoltarDashboard) {
   btnVoltarDashboard.addEventListener('click', () => {
+    window.location.hash = '#dashboard';
+  });
+}
+
+if (btnIrParaReincidencia) {
+  btnIrParaReincidencia.addEventListener('click', () => {
+    window.location.hash = '#reincidencia';
+  });
+}
+
+if (btnVoltarDashReinc) {
+  btnVoltarDashReinc.addEventListener('click', () => {
     window.location.hash = '#dashboard';
   });
 }
@@ -467,58 +503,8 @@ document.getElementById('btnSair').addEventListener('click', () => {
 });
 
 // ----------------------------------------------------
-// TELA E RELATÓRIO DE REINCIDÊNCIA
+// RELATÓRIO DE REINCIDÊNCIA (BUSCA E MONTAGEM)
 // ----------------------------------------------------
-const cardReincidencia = document.getElementById('cardReincidencia');
-const btnIrParaReincidencia = document.getElementById('btnIrParaReincidencia');
-const btnVoltarDashReinc = document.getElementById('btnVoltarDashReinc');
-const btnBuscarReincidencia = document.getElementById('btnBuscarReincidencia');
-const selectRegionalReinc = document.getElementById('selectRegionalReinc');
-const inputDataReinc = document.getElementById('inputDataReinc');
-
-// Controle de Navegação por HASH
-if (btnIrParaReincidencia) {
-  btnIrParaReincidencia.addEventListener('click', () => {
-    window.location.hash = '#reincidencia';
-  });
-}
-
-if (btnVoltarDashReinc) {
-  btnVoltarDashReinc.addEventListener('click', () => {
-    window.location.hash = '#dashboard';
-  });
-}
-
-// Atualiza a função navegarParaRota() para incluir a nova tela
-const navegarParaRotaAntigo = navegarParaRota;
-navegarParaRota = function() {
-  if (cardReincidencia) cardReincidencia.classList.add('hidden');
-  
-  const hash = window.location.hash;
-  if (hash === '#reincidencia' && cardReincidencia) {
-    if (cardDashboard) cardDashboard.classList.add('hidden');
-    cardReincidencia.classList.remove('hidden');
-  } else {
-    navegarParaRotaAntigo();
-  }
-};
-
-// Ao carregar o mapa de regionais, preenche o select de Reincidência
-const preencherSelectsAntigo = preencherSelectsEDinamicos;
-preencherSelectsEDinamicos = function() {
-  preencherSelectsAntigo();
-  if (selectRegionalReinc) {
-    selectRegionalReinc.innerHTML = '<option value="">Selecione a Regional</option>';
-    Object.keys(mapaRegionaisLojas).forEach(reg => {
-      const opt = document.createElement('option');
-      opt.value = reg;
-      opt.textContent = reg;
-      selectRegionalReinc.appendChild(opt);
-    });
-  }
-};
-
-// Requisição da Busca
 if (btnBuscarReincidencia) {
   btnBuscarReincidencia.addEventListener('click', async () => {
     const regional = selectRegionalReinc.value;
@@ -554,7 +540,6 @@ if (btnBuscarReincidencia) {
   });
 }
 
-// Montagem da Tabela Visual de Reincidência
 function montarTabelaReincidencia(lojas) {
   let html = `
     <div class="table-responsive">
